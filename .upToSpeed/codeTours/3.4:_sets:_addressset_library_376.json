@@ -1,0 +1,92 @@
+{
+    "title": "3.4: Sets: AddressSet Library",
+    "id": "luPAlNOhquqTlL7zqtm1CqdkMawnI0oXp3JKxl9RaTM=",
+    "originalId": 376,
+    "position": 11,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "The `Sets` library implements a lightweight set of addresses that supports constant-time add, remove, and membership checks. We will look at the internal data layout, then walk through the three core helpers (`add`, `remove`, `contains`) and finally see how another contract (`Whitelist`) relies on them.",
+            "title": "",
+            "id": "6657"
+        },
+        {
+            "type": "highlight",
+            "description": "The `AddressSet` struct keeps two parallel data-structures:\n- `values` (line 10) – a packed array storing every address that belongs to the set.\n- `indexes` (line 11) – a mapping from an address to its position *plus one* inside `values`.\nStoring `index+1` instead of the raw index means the default value `0` cleanly signals \"not present\".",
+            "file": "src/libraries/Sets.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 12
+                }
+            ],
+            "title": "",
+            "id": "6658"
+        },
+        {
+            "type": "highlight",
+            "description": "`add` keeps insertion O(1) while preventing duplicates:\n1. Line 21 calls `contains` – if an index already exists the function bails out (line 22) and returns `false`.\n2. Otherwise the address is appended to `values` (line 24).\n3. Line 25 stores `self.values.length`, i.e. **index+1**, into `indexes`.  Because Solidity arrays grow after the push, this equals the element’s new position plus one.\nReturning `true` confirms the element was newly added.",
+            "file": "src/libraries/Sets.sol",
+            "highlight": [
+                {
+                    "start": 20,
+                    "end": 27
+                }
+            ],
+            "title": "",
+            "id": "6659"
+        },
+        {
+            "type": "highlight",
+            "description": "`remove` performs constant-time deletion via the classic swap-and-pop technique:\n1. Fetch the stored index (line 36).  If it is `0`, the value was never inside the set (line 37-39).\n2. Subtract one (line 42) to obtain the real array index.\n3. Grab the last element’s index (`lastIndex`, line 44).  If the element to delete is *not* the last one (line 46) it:\n   - Copies the last element over the soon-to-be-vacant slot (lines 47-48).\n   - Updates that element’s `indexes` entry to its new position (`index+1`, line 49).\n4. `pop()` (line 52) discards the duplicated tail element.\n5. Finally the mapping slot for the removed address is cleared (line 54) and the function returns `true`.",
+            "file": "src/libraries/Sets.sol",
+            "highlight": [
+                {
+                    "start": 35,
+                    "end": 57
+                }
+            ],
+            "title": "",
+            "id": "6660"
+        },
+        {
+            "type": "highlight",
+            "description": "`contains` is just `return indexes[value] != 0;` (line 66).  Because every stored index is shifted by +1, a zero value unambiguously means the address is **not** part of the set.  This single storage read gives an O(1) membership check.",
+            "file": "src/libraries/Sets.sol",
+            "highlight": [
+                {
+                    "start": 65,
+                    "end": 67
+                }
+            ],
+            "title": "",
+            "id": "6661"
+        },
+        {
+            "type": "highlight",
+            "description": "Contracts link the library with `using Sets for Sets.AddressSet` (line 11) and embed a set instance (line 13).",
+            "file": "src/utils/Whitelist.sol",
+            "highlight": [
+                {
+                    "start": 10,
+                    "end": 15
+                }
+            ],
+            "title": "",
+            "id": "6662"
+        },
+        {
+            "type": "highlight",
+            "description": "Here is how the `Whitelist` contract leverages the helpers we explored:\n- `addresses.add(caller);` (line 31) – adds an account while automatically skipping duplicates.\n- `addresses.remove(caller);` (line 41) – removes an account with the swap-and-pop logic.\n- `addresses.contains(account);` (line 54) – quick membership check when evaluating `isWhitelisted`.\nThanks to Sets, each operation costs only O(1) storage reads/writes without implementing the data-structure again.",
+            "file": "src/utils/Whitelist.sol",
+            "highlight": [
+                {
+                    "start": 26,
+                    "end": 55
+                }
+            ],
+            "title": "",
+            "id": "6663"
+        }
+    ]
+}

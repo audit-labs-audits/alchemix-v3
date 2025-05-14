@@ -1,0 +1,189 @@
+{
+  "title": "7.3: Alchemist V3 Core: AlchemistV3 Contract",
+  "id": "Omd8A3iDNyJGRgxe0czZ7yt5yVfmYGiXPL/bXcgwt68=",
+  "originalId": 394,
+  "position": 29,
+  "steps": [
+    {
+      "type": "textOnly",
+      "description": "This tour unpacks how `AlchemistV3` tracks **collateral**, **debt** and **earmarking**, how every **user-facing action** mutates that state, and where **access-control** & **invariant checks** gate those flows.",
+      "title": "",
+      "id": "6847"
+    },
+    {
+      "type": "highlight",
+      "description": "Global state: note cumulativeEarmarked (51), totalDebt (72), totalSyntheticsIssued (75) and the transmuter / adapter / token addresses that external calls rely on.",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 35,
+          "end": 100
+        }
+      ],
+      "title": "",
+      "id": "6848"
+    },
+    {
+      "type": "highlight",
+      "description": "_accounts (127) holds per-position accounting; _earmarkWeight/_redemptionWeight and _totalLocked (123-119) are the moving global weights applied later by _sync().",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 120,
+          "end": 131
+        }
+      ],
+      "title": "",
+      "id": "6849"
+    },
+    {
+      "type": "highlight",
+      "description": "Access control modifiers – onlyAdmin, onlyAdminOrGuardian, onlyTransmuter – guard every privileged function.",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 132,
+          "end": 151
+        }
+      ],
+      "title": "",
+      "id": "6850"
+    },
+    {
+      "type": "highlight",
+      "description": "deposit(): validates args & caps, mints an NFT when needed (365-368), then increments account.collateral/freeCollateral before the ERC20 transfer (376).",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 356,
+          "end": 377
+        }
+      ],
+      "title": "",
+      "id": "6851"
+    },
+    {
+      "type": "highlight",
+      "description": "withdraw(): ear-marks & syncs first (389-392), checks freeCollateral (393) then decrements balances and transfers yield tokens out (401-402). It finally re-validates collateralization (398-400).",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 384,
+          "end": 403
+        }
+      ],
+      "title": "",
+      "id": "6852"
+    },
+    {
+      "type": "highlight",
+      "description": "mint(): after access checks it calls _earmark() and _sync(), then delegates real work to _mint(tokenId, amount, recipient).",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 410,
+          "end": 426
+        }
+      ],
+      "title": "",
+      "id": "6853"
+    },
+    {
+      "type": "highlight",
+      "description": "`_mint()`: uses `_addDebt` (714) to raise per-account & global debt, calls `_validate` (718-720) to enforce collateralization, records `lastMintBlock`, and safe-mints the `ERC20` debt token.",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 709,
+          "end": 725
+        }
+      ],
+      "title": "",
+      "id": "6854"
+    },
+    {
+      "type": "highlight",
+      "description": "`_addDebt` (852-864) locks collateral proportional to new debt; `_subDebt` (869-885) frees collateral and lowers global totals. Both mutate `totalDebt` and `_totalLocked`.",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 852,
+          "end": 885
+        }
+      ],
+      "title": "",
+      "id": "6855"
+    },
+    {
+      "type": "highlight",
+      "description": "`burn()`: burns `alAssets` to repay debt; after earmark & sync it computes credit (`464-468`), burns tokens (`472`) and finally calls `_subDebt` (`478`) to update state.",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 447,
+          "end": 472
+        }
+      ],
+      "title": "",
+      "id": "6856"
+    },
+    {
+      "type": "highlight",
+      "description": "`_earmark()`: once per block queries `Transmuter.queryGraph(...)` to learn how much debt became lockable. It bumps `_earmarkWeight` and `cumulativeEarmarked` accordingly.",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 1006,
+          "end": 1016
+        }
+      ],
+      "title": "",
+      "id": "6857"
+    },
+    {
+      "type": "highlight",
+      "description": "`_sync()`: for a given account, applies weight deltas from `_earmarkWeight`/`_redemptionWeight`/`_collateralWeight` to update earmarked, debt, and collateral balances.",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 973,
+          "end": 1004
+        }
+      ],
+      "title": "",
+      "id": "6858"
+    },
+    {
+      "type": "highlight",
+      "description": "`pauseDeposits` and `pauseLoans` – callable by admin or guardian – are the contract’s emergency switches; later `_checkState(!depositsPaused/loansPaused)` enforces them.",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 307,
+          "end": 317
+        }
+      ],
+      "title": "",
+      "id": "6859"
+    },
+    {
+      "type": "highlight",
+      "description": "`_checkArgument()` helper … and below, `_checkState()` (956-963) – inexpensive invariants used throughout, e.g. `setProtocolFee` (242-247) asserts `fee <= BPS`.",
+      "file": "src/AlchemistV3.sol",
+      "highlight": [
+        {
+          "start": 908,
+          "end": 915
+        }
+      ],
+      "title": "",
+      "id": "6860"
+    },
+    {
+      "type": "textOnly",
+      "description": "With these pieces in place you can now trace the **full life-cycle**: `deposit` → `mint` (adding debt & locking collateral) → `earmark` (global debt queued for redemption) → `sync` (per-account debt/earmark update) → `redeem`/`burn`/`repay`, all gated by robust access control and invariant checks.",
+      "title": "",
+      "id": "6861"
+    }
+  ]
+}

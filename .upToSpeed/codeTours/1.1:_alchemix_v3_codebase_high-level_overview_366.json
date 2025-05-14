@@ -1,0 +1,109 @@
+{
+    "title": "1.1: Alchemix V3 Codebase High-Level Overview",
+    "id": "UONVrv+V3KlgZyY7y0+NH8ctLUIBE/jFlApMBPtsbys=",
+    "originalId": 366,
+    "position": 1,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "`src/`\n  `AlchemistV3.sol`          # Core lending & debt management\n  `Transmuter.sol`           # Redemption scheduler & executor\n  `AlchemistV3Position.sol`  # Position NFT\n  `AlchemistTokenVault.sol`  # ERC-20 fee vault\n  `AlchemistETHVault.sol`    # ETH/WETH fee vault\n  `adapters/`                # Token & price-feed adapters\n  `interfaces/`              # API definitions for every component\n  `libraries/`               # Utility libraries (math, decay, graph, tokens, NFT metadata)\n  `base/`                    # Common errors & messages\n  `mocks/`                   # Mock contracts for testing\n  `test/`                    # Unit, integration, invariant tests",
+            "title": "",
+            "id": "6539"
+        },
+        {
+            "type": "textOnly",
+            "description": "Architecture overview\n\nComponents:\n- **User Wallet**: Initiates deposits, redemptions, and interacts with AlchemistV3.\n- **AlchemistV3**: Core bank for depositing yield-bearing collateral, minting/burning synthetic debt, enforcing collateralization, and syncing with Transmuter.\n- **Yield Token**: Underlying yield-bearing asset redeemed over time.\n- **Transmuter**: Manages redemption schedules and earmarks debt; issues per-position ERC-721 NFTs.\n- **Vaults**: Collect fees in ERC-20 and ETH/WETH.\n- **Position NFT**: ERC-721 token tracking each user’s redemption position.\n\nKey flows:\n1. Deposit/mint/burn operations in **AlchemistV3**.\n2. Debt earmarking and redemption scheduling in **Transmuter**.\n3. Yield payouts returned to users.\n4. Fees accumulated in **Vaults**.\n5. User positions recorded as **ERC-721 NFTs**.",
+            "title": "",
+            "id": "6540"
+        },
+        {
+            "type": "highlight",
+            "description": "AlchemistV3 is the system’s \"bank\".  It receives yield-bearing collateral, keeps per-account records and global accounting, mints/burns synthetic debt tokens, enforces collateral ratios & liquidations, and synchronises earmark/redemption state with the Transmuter.  The contract exposes high-level flows such as `deposit`, `withdraw`, `mint`, `burn`, `repay`, `liquidate`, and `redeem`.",
+            "file": "src/AlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 21,
+                    "end": 40
+                }
+            ],
+            "title": "",
+            "id": "6541"
+        },
+        {
+            "type": "highlight",
+            "description": "Transmuter holds users’ synthetic debt tokens over a time window, giving them gradual redemption into the underlying yield token. It tracks each redemption as an `ERC-721` position, maintains a Fenwick tree (`StakingGraph`) to compute how much debt should be earmarked at every block, and exposes `createRedemption`, `claimRedemption`, and `queryGraph` used by AlchemistV3.",
+            "file": "src/Transmuter.sol",
+            "highlight": [
+                {
+                    "start": 18,
+                    "end": 40
+                }
+            ],
+            "title": "",
+            "id": "6542"
+        },
+        {
+            "type": "highlight",
+            "description": "`AlchemistV3Position` is an `ERC-721Enumerable` NFT. Only the `AlchemistV3` contract can `mint` and `burn`, so every user action that opens a new position results in a unique token id. The NFT integrates `NFTMetadataGenerator` for **on-chain SVG metadata** and resets **mint allowances** when transferred.",
+            "file": "src/AlchemistV3Position.sol",
+            "highlight": [
+                {
+                    "start": 11,
+                    "end": 25
+                }
+            ],
+            "title": "",
+            "id": "6543"
+        },
+        {
+            "type": "highlight",
+            "description": "`AbstractFeeVault` provides the common logic for fee vaults. It keeps a reference to the token it manages, an **authorized** list (**Alchemist & owner** by default), and guarded `withdraw` / `totalDeposits` hooks implemented by `AlchemistTokenVault` (ERC-20) and `AlchemistETHVault` (ETH/WETH). `onlyAuthorized` protects withdrawals while `setAuthorization` lets the owner add new operators.",
+            "file": "src/adapters/AbstractFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 7,
+                    "end": 50
+                }
+            ],
+            "title": "",
+            "id": "6544"
+        },
+        {
+            "type": "highlight",
+            "description": "**The Token Adapter** interface standardises how **AlchemistV3** queries wrapped yield tokens and price feeds.\n- `token()` – yield token address.\n- `underlyingToken()` – token redeemed by unwinding yield token.\n- `price()` – conversion rate used by **AlchemistV3** for collateral valuations.\nConcrete adapters (e.g. `EulerUSDCAdapter`, `ETHUSDPriceFeedAdapter`) live under `src/adapters/`.",
+            "file": "src/interfaces/ITokenAdapter.sol",
+            "highlight": [
+                {
+                    "start": 1,
+                    "end": 26
+                }
+            ],
+            "title": "",
+            "id": "6545"
+        },
+        {
+            "type": "textOnly",
+            "description": "interfaces/\n  Core:         `IAlchemistV3.sol`, `ITransmuter.sol`, `IAlchemistV3Position.sol`\n  Vaults:       `IFeeVault.sol`, `IAlchemistTokenVault.sol`, `IAlchemistETHVault.sol`\n  Tokens & misc `IERC20*`, `IERC721Enumerable`, `IYieldToken.sol`, `ITokenAdapter.sol`,\n                `IWhitelist.sol`, `IYearnVaultV2.sol`",
+            "title": "",
+            "id": "6546"
+        },
+        {
+            "type": "textOnly",
+            "description": "libraries/\n  **Position decay & weight** … `PositionDecay.sol`\n  **Time-weighted graph** …… `StakingGraph.sol`\n  **Safe token ops** ………… `TokenUtils.sol`, `SafeERC20.sol`\n  **Fixed-point math** …… `FixedPointMath.sol`, `SafeCast.sol`\n  **On-chain NFT metadata** … `NFTMetadataGenerator.sol`\n  **Utility sets** …………… `Sets.sol`",
+            "title": "",
+            "id": "6547"
+        },
+        {
+            "type": "textOnly",
+            "description": "`test/`\n  - `AlchemistETHVault.t.sol` / `AlchemistTokenVault.t.sol` – unit tests for vaults\n  - `AlchemistV3.t.sol`, `Transmuter.t.sol` – core flow tests\n  - `IntegrationTest.t.sol` – happy-path scenario\n  - `Invariants/FullSystemInvariantsTest.sol` – property-based checks\n  - `mocks/` – Test ERC-20s, yield tokens, adapter stubs",
+            "title": "",
+            "id": "6548"
+        },
+        {
+            "type": "textOnly",
+            "description": "**What’s next?**\n- `2.x` `External Interfaces`\n- `3.x` `Libraries`\n- `4.x` `Vaults`\n- `5.x` `Adapters & Price Feeds`\n- `6.x` `Transmuter internals`\n- `7.x` `AlchemistV3 core flows & Position NFT`\n- `8.x` `Tests & Invariants`",
+            "title": "",
+            "id": "6549"
+        }
+    ]
+}

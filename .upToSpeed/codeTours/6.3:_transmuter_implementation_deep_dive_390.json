@@ -1,0 +1,215 @@
+{
+  "title": "6.3: Transmuter Implementation Deep Dive",
+  "id": "+UAIjWUwvTi6cyRz13pf3fiUzBJLPrPg1/fpBrAEBVs=",
+  "originalId": 390,
+  "position": 25,
+  "steps": [
+    {
+      "type": "textOnly",
+      "description": "We will read `Transmuter.sol` top-to-bottom, stopping at every major concept: dependencies, constants, storage layout, constructor configuration, access control, administrative setters, metadata helpers, the redemption lifecycle, graph queries, and the private helpers that bind everything together.",
+      "title": "",
+      "id": "6795"
+    },
+    {
+      "type": "highlight",
+      "description": "Dependencies. ❶ IAlchemistV3 – external engine used to convert synthetic debt ↔️ yield tokens. ❷ StakingGraph – Fenwick tree library that tracks aggregate stake weight per block. ❸ TokenUtils – safe token helpers, and ❹ NFTMetadataGenerator – ERC-721 metadata.  OpenZeppelin’s ERC721 and utils are inherited for the NFT wrapper.",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 4,
+          "end": 15
+        }
+      ],
+      "title": "",
+      "id": "6796"
+    },
+    {
+      "type": "highlight",
+      "description": "Three numerical constants govern fee maths and graph scaling. 26: BPS – basis-points denominator (=10 000). 27: FIXED_POINT_SCALAR – 1e18 fixed-point helper when comparing debt and collateral units. 28: BLOCK_SCALING_FACTOR – 1e8 magnifier that turns fractional stake-per-block into signed ints with enough precision for the Fenwick tree.",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 26,
+          "end": 29
+        }
+      ],
+      "title": "",
+      "id": "6797"
+    },
+    {
+      "type": "highlight",
+      "description": "Public state layout. 34-49 configurable economics (depositCap, fees, graphSize, timeToTransmute). 52-58 admin & fee receiver. 61 syntheticToken holds the alAsset ERC-20. 64 live alchemist instance and 67 a list of earlier ones. 70-76 private bookkeeping – individual StakingPositions, the Fenwick graph, and the NFT nonce.",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 34,
+          "end": 70
+        }
+      ],
+      "title": "",
+      "id": "6798"
+    },
+    {
+      "type": "highlight",
+      "description": "Constructor wires the parameters struct into storage. All knobs (fees, cap, graphSize, timing) are fixed at deployment; admin starts as the deployer.",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 83,
+          "end": 91
+        }
+      ],
+      "title": "",
+      "id": "6799"
+    },
+    {
+      "type": "highlight",
+      "description": "onlyAdmin modifier – every administrative call funnels through _checkArgument to guarantee msg.sender == admin.",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 78,
+          "end": 82
+        }
+      ],
+      "title": "",
+      "id": "6800"
+    },
+    {
+      "type": "highlight",
+      "description": "Guard helpers: _checkArgument (lines 275-279) & _checkState (283-288) revert with custom IllegalArgument / IllegalState when a pre-condition fails.",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 274,
+          "end": 290
+        }
+      ],
+      "title": "",
+      "id": "6801"
+    },
+    {
+      "type": "highlight",
+      "description": "Admin hand-over. setPendingAdmin stores a new candidate; acceptAdmin validates sender == pendingAdmin then flips admin and clears the slot, emitting events.",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 93,
+          "end": 113
+        }
+      ],
+      "title": "",
+      "id": "6802"
+    },
+    {
+      "type": "highlight",
+      "description": "Economic knobs. Each setter checks bounds then updates storage and emits an event: setAlchemist, setDepositCap (requires cap fits into int256 for graph maths), setTransmutationFee & setExitFee (≤BPS), setTransmutationTime, setProtocolFeeReceiver (non-zero).",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 115,
+          "end": 158
+        }
+      ],
+      "title": "",
+      "id": "6803"
+    },
+    {
+      "type": "highlight",
+      "description": "Read-only helpers. tokenURI composes on-chain metadata through NFTMetadataGenerator; getPosition exposes the raw StakingPosition struct.",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 160,
+          "end": 169
+        }
+      ],
+      "title": "",
+      "id": "6804"
+    },
+    {
+      "type": "highlight",
+      "description": "createRedemption lifecycle. 173-179 guards: non-zero deposit & within depositCap and outstanding synthetic supply. 185 transfers the alAsset from user. 187 stores a new StakingPosition keyed by ++_nonce. 190 updates the Fenwick graph with per-block weight = amount × SCALE ÷ duration. 192-195 totals locked and mints the ERC-721 to caller. 196 emits PositionCreated.",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 171,
+          "end": 197
+        }
+      ],
+      "title": "",
+      "id": "6805"
+    },
+    {
+      "type": "highlight",
+      "description": "claimRedemption unwinds a position. Steps: 202 existence check. 208-211 calculate matured vs. remaining amount. 212 owner check then burn NFT. 219-224 redeem yield from Alchemist only if local balance is insufficient. 225-230 compute transmutation & exit fees. 233 removes residual stake from graph. 235-242 bad-debt ratio scales down claim if system is underwater. 243-248 transfers yield tokens & synthetic tokens, splitting fees. 250 burns the fully transmuted synths. 252-256 update totals, emit event, delete storage.",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 199,
+          "end": 257
+        }
+      ],
+      "title": "",
+      "id": "6806"
+    },
+    {
+      "type": "highlight",
+      "description": "queryGraph uses StakingGraph.queryStake to pull the aggregate stake weight over a block window, then converts back from scaled int to debt token units (+1 for rounding).",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 259,
+          "end": 267
+        }
+      ],
+      "title": "",
+      "id": "6807"
+    },
+    {
+      "type": "highlight",
+      "description": "`StakingGraph.addStake` packs two delta updates (`amount` and `amount×block`) into a **Fenwick tree**, expanding the tree size when necessary. `Transmuter` passes `amount × SCALE ÷ duration` so every stake contributes a constant weight per block.",
+      "file": "src/libraries/StakingGraph.sol",
+      "highlight": [
+        {
+          "start": 50,
+          "end": 63
+        }
+      ],
+      "title": "",
+      "id": "6808"
+    },
+    {
+      "type": "highlight",
+      "description": "`StakingGraph.queryStake` subtracts prefix sums of (`Δ`, `Δ×block`) to retrieve the exact weight between start & end. This is the primitive used by `Transmuter.queryGraph`.",
+      "file": "src/libraries/StakingGraph.sol",
+      "highlight": [
+        {
+          "start": 108,
+          "end": 123
+        }
+      ],
+      "title": "",
+      "id": "6809"
+    },
+    {
+      "type": "highlight",
+      "description": "`_updateStakingGraph` is merely a thin wrapper calling `addStake` with current block and the chosen duration, keeping library code encapsulated.",
+      "file": "src/Transmuter.sol",
+      "highlight": [
+        {
+          "start": 269,
+          "end": 272
+        }
+      ],
+      "title": "",
+      "id": "6810"
+    },
+    {
+      "type": "textOnly",
+      "description": "You can now follow every storage write and library call from `deposit`, through `maturation`, to `claim`, and understand how the **Fenwick graph** lets anyone preview upcoming liquidity needs with `queryGraph`.",
+      "title": "",
+      "id": "6811"
+    }
+  ]
+}

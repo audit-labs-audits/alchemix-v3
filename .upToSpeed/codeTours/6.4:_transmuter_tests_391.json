@@ -1,0 +1,267 @@
+{
+    "title": "6.4: Transmuter Tests",
+    "id": "ydIVJI8OPs9q7NhH9tq8t/82nEoTbUOwUQuKvUK/Paw=",
+    "originalId": 391,
+    "position": 26,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "We will follow the unit-test file src/test/Transmuter.t.sol step-by-step. Each stop on the tour shows how the test exercises a public API function of `Transmuter`, which lives in `src/Transmuter.sol`. By the end you will know exactly which behavioural guarantees the tests pin down.",
+            "title": "",
+            "id": "6812"
+        },
+        {
+            "type": "highlight",
+            "description": "Test bootstrap –\n- `AlEth` mock tokens are deployed (lines `92-96`).\n- A purpose-built **MockAlchemist** is created (line `97`) and passed to the **Transmuter** after construction.\n- **Transmuter** is initialised with parameters (line `99`) and wired to the mock (`101`).\n- Deposit-cap is opened to `int-max` (`103`) so most tests are unconstrained.\n- Utility helpers `deal()` and `approve()` pre-fund accounts with synthetic & collateral tokens (`105-113`).\nThis establishes a fully-functional, isolated **Transmuter** instance for every test.",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 84,
+                    "end": 113
+                }
+            ],
+            "title": "",
+            "id": "6813"
+        },
+        {
+            "type": "highlight",
+            "description": "Happy-path administration – `setPendingAdmin` / `acceptAdmin`\n1. Current admin calls `setPendingAdmin(0xbeef)` (116).\n2. `0xbeef` accepts (118-119).\n3. Assertion verifies admin changed (121-122).",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 115,
+                    "end": 122
+                }
+            ],
+            "title": "",
+            "id": "6814"
+        },
+        {
+            "type": "highlight",
+            "description": "**Admin guard – revert scenario**\n- `setPendingAdmin` succeeds, but a different address tries `acceptAdmin`.\n- `expectRevert()` confirms the call reverts with `Unauthorized` (127-130).\nThese two tests jointly prove only the nominated `pendingAdmin` can accept.",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 124,
+                    "end": 131
+                }
+            ],
+            "title": "",
+            "id": "6815"
+        },
+        {
+            "type": "highlight",
+            "description": "**Boundary checks for configurable parameters**\n- `setTransmutationFee` and `setExitFee` must be ≤ `10_000` BPS. Lines `143-151` confirm values above the limit revert.\n- `setTransmutationTime` can be freely updated – lines `153-157` assert the new value is stored.",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 143,
+                    "end": 157
+                }
+            ],
+            "title": "",
+            "id": "6816"
+        },
+        {
+            "type": "highlight",
+            "description": "`createRedemption` – success path\n- User deposits 100 alETH (160-162).\n- `getPosition(1)` returns freshly-minted StakingPosition (163-165).\n- `totalLocked` increments (166-167), proving internal accounting.",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 159,
+                    "end": 167
+                }
+            ],
+            "title": "",
+            "id": "6817"
+        },
+        {
+            "type": "highlight",
+            "description": "**createRedemption – all revert branches** - 1. deposit > `int256.max` (170-174) ⇒ **DepositCapReached**\n2. zero amount (189-192) ⇒ **DepositZeroAmount**\n3. `depositCap` lowered below amount (194-199) ⇒ **DepositCapReached**\n4. synthetic-issued cap from `Alchemist` (201-207) ⇒ **DepositCapReached**\nEach branch is explicitly exercised ensuring front-running economic checks work.",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 169,
+                    "end": 207
+                }
+            ],
+            "title": "",
+            "id": "6818"
+        },
+        {
+            "type": "highlight",
+            "description": "Fuzzing deposit amounts\nThe fuzzer feeds arbitrary positive amounts (`177-178`). Assertions mimic the fixed-size test proving correctness across a wide range (`183-187`).",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 176,
+                    "end": 186
+                }
+            ],
+            "title": "",
+            "id": "6819"
+        },
+        {
+            "type": "highlight",
+            "description": "`claimRedemption` – normal maturation\n- Collateral tokens pre-fund `Transmuter` (216-217).\n- User deposits (218-220) then blocks advance past maturation (221).\n- Balance assertions before claim show assets locked (223-225).\n- After claim (226-228) user receives yield tokens; synthetic balance in `Transmuter` is zero (229-231).",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 215,
+                    "end": 231
+                }
+            ],
+            "title": "",
+            "id": "6820"
+        },
+        {
+            "type": "highlight",
+            "description": "`claimRedemption` – bad-debt scenario\n- `Alchemist`’s underlying value cut in half (244).\n- `claimRedemption` scales output by bad-debt ratio (247-250).\nThe test proves `Transmuter`’s protective logic (lines 236-242 in implementation) fires when system health deteriorates.",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 233,
+                    "end": 251
+                }
+            ],
+            "title": "",
+            "id": "6821"
+        },
+        {
+            "type": "highlight",
+            "description": "Ownership enforcement\nA different caller attempts `claimRedemption` (264-266) and the test expects **CallerNotOwner** revert – confirming NFT ownership gate.",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 253,
+                    "end": 269
+                }
+            ],
+            "title": "",
+            "id": "6822"
+        },
+        {
+            "type": "highlight",
+            "description": "**claimRedemption** – sourcing liquidity from `Alchemist`\nWhen Transmuter balance is insufficient it calls `alchemist.redeem()`.  The test records `Alchemist`’s starting balance (280) and verifies it decreases exactly by the redeemed amount (288-289).",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 271,
+                    "end": 289
+                }
+            ],
+            "title": "",
+            "id": "6823"
+        },
+        {
+            "type": "highlight",
+            "description": "Fuzzing matured claims\nRandom positive deposit amounts are round-tripped through `createRedemption`/`claimRedemption` confirming formula correctness over the entire input domain (294-308).",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 291,
+                    "end": 309
+                }
+            ],
+            "title": "",
+            "id": "6824"
+        },
+        {
+            "type": "highlight",
+            "description": "`claimRedemption` with protocol fee\n- `transmutationFee` set to 1 % (315-317).\n- After claim (325-327) user receives 99 %, `protocolFeeReceiver` receives 1 % (328-330).",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 311,
+                    "end": 331
+                }
+            ],
+            "title": "",
+            "id": "6825"
+        },
+        {
+            "type": "highlight",
+            "description": "Fuzzing protocol fee\nThe test iterates every fee in `[0,10000]` BPS (`336-337`) and checks proportional distribution (`351-353`).",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 333,
+                    "end": 353
+                }
+            ],
+            "title": "",
+            "id": "6826"
+        },
+        {
+            "type": "highlight",
+            "description": "Premature claim – partial transmutation\n- At `50 % of maturity` (367-370) only half the deposit transmutes.\n- User receives half yield tokens and gets half synthetic tokens back minus `exit fee 0` (372-376).\n- `queryGraph` is probed after claim to ensure the remaining graph entry was cleared (379-382).",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 356,
+                    "end": 382
+                }
+            ],
+            "title": "",
+            "id": "6827"
+        },
+        {
+            "type": "highlight",
+            "description": "Fuzzing premature claims\nVariable `time` is constrained to < `timeToTransmute` (385-387). The dual `assertApproxEqAbs` checks both collateral and synthetic deltas match the linear vesting schedule for any block-offset (403-405).",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 384,
+                    "end": 405
+                }
+            ],
+            "title": "",
+            "id": "6828"
+        },
+        {
+            "type": "highlight",
+            "description": "**Premature claim with exit fee**\n- `exitFee` set to `1 %` (`415`).\n- After mid-way claim user receives yield tokens plus `99 %` of untransmuted synths; the contract (`this`) collects the `1 %` fee (`429-433`).",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 413,
+                    "end": 433
+                }
+            ],
+            "title": "",
+            "id": "6829"
+        },
+        {
+            "type": "highlight",
+            "description": "`queryGraph` correctness\nTwo variants show:\n1. Full interval returns ≈100 e18 after maturity (441-444).\n2. Half-interval returns ≈50 e18 at mid-maturity (452-454).\nThis validates the **Fenwick-tree** based staking graph accumulator.",
+            "file": "src/test/Transmuter.t.sol",
+            "highlight": [
+                {
+                    "start": 435,
+                    "end": 455
+                }
+            ],
+            "title": "",
+            "id": "6830"
+        },
+        {
+            "type": "highlight",
+            "description": "Implementation of `queryGraph` (for context)\nThe function delegates to `StakingGraph.queryStake` and scales the fixed-point result back to token units (261-266).  Tests above ensure its observable behaviour is correct.",
+            "file": "src/Transmuter.sol",
+            "highlight": [
+                {
+                    "start": 260,
+                    "end": 272
+                }
+            ],
+            "title": "",
+            "id": "6831"
+        },
+        {
+            "type": "textOnly",
+            "description": "Additional edge-cases covered by the suite include:\n- `PositionNotFound` (209-213) – claiming a non-existent NFT.\n- `DepositCapReached` on syntheticsIssued ratio (201-207).\n- Graph update rollback on early exit (379-382).\nTogether these assertions form an exhaustive safety-net around `Transmuter`’s state-machine, guaranteeing admin controls, deposit flow, vesting logic, fee accounting, bad-debt handling, and historical-graph accuracy.",
+            "title": "",
+            "id": "6832"
+        }
+    ]
+}

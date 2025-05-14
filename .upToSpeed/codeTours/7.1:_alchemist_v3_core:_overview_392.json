@@ -1,0 +1,176 @@
+{
+    "title": "7.1: Alchemist V3 Core: Overview",
+    "id": "nHEWf1ZtQQ+n5Ny9J5OpgPmdr199+VKBySprhKnbhQk=",
+    "originalId": 392,
+    "position": 27,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "This walkthrough introduces the four core source files that make up the Alchemist V3 “Core” component and shows where a user or reviewer would begin reading.\n\n- `src/interfaces/IAlchemistV3.sol` – the public facing interface.\n- `src/AlchemistV3.sol` – the main state-holding implementation.\n- `src/interfaces/IAlchemistV3Position.sol` – interface for the position-tracking NFT.\n- `src/AlchemistV3Position.sol` – **ERC-721** contract that mints/burns positions on behalf of AlchemistV3.\n\nThe next steps highlight the entry points in each file without digging into internal logic.",
+            "title": "",
+            "id": "6833"
+        },
+        {
+            "type": "highlight",
+            "description": "The public interface is aggregated into a single type that end users and integrators import.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 788,
+                    "end": 793
+                }
+            ],
+            "title": "",
+            "id": "6834"
+        },
+        {
+            "type": "highlight",
+            "description": "First two user actions – supplying collateral (deposit) and withdrawing it (withdraw).  Notice that the position is always identified by `tokenId`.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 106,
+                    "end": 135
+                }
+            ],
+            "title": "",
+            "id": "6835"
+        },
+        {
+            "type": "highlight",
+            "description": "Borrowing against collateral: the `mint` entry point.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 149,
+                    "end": 154
+                }
+            ],
+            "title": "",
+            "id": "6836"
+        },
+        {
+            "type": "highlight",
+            "description": "Closing or correcting positions – burn, repay, and liquidate are the remaining key user methods.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 190,
+                    "end": 236
+                }
+            ],
+            "title": "",
+            "id": "6837"
+        },
+        {
+            "type": "highlight",
+            "description": "The concrete implementation – note the contract header and the most important state: totals, external component addresses, and the per-account mapping `_accounts`.",
+            "file": "src/AlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 21,
+                    "end": 131
+                }
+            ],
+            "title": "",
+            "id": "6838"
+        },
+        {
+            "type": "highlight",
+            "description": "Implementation entry point that matches the interface: `deposit`.",
+            "file": "src/AlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 356,
+                    "end": 365
+                }
+            ],
+            "title": "",
+            "id": "6839"
+        },
+        {
+            "type": "highlight",
+            "description": "…and the borrowing entry point **mint**.",
+            "file": "src/AlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 409,
+                    "end": 417
+                }
+            ],
+            "title": "",
+            "id": "6840"
+        },
+        {
+            "type": "highlight",
+            "description": "Two internal flow helpers you will see referenced throughout the codebase: `_sync` (per-account state refresh) and `_earmark` (global debt accounting).",
+            "file": "src/AlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 973,
+                    "end": 1015
+                }
+            ],
+            "title": "",
+            "id": "6841"
+        },
+        {
+            "type": "highlight",
+            "description": "Interface for the position NFT – only `mint` and `burn` are needed by `AlchemistV3`.",
+            "file": "src/interfaces/IAlchemistV3Position.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 23
+                }
+            ],
+            "title": "",
+            "id": "6842"
+        },
+        {
+            "type": "highlight",
+            "description": "`AlchemistV3Position` is an ERC-721 enumerable token – it inherits from `OpenZeppelin`’s implementation.",
+            "file": "src/AlchemistV3Position.sol",
+            "highlight": [
+                {
+                    "start": 11,
+                    "end": 24
+                }
+            ],
+            "title": "",
+            "id": "6843"
+        },
+        {
+            "type": "highlight",
+            "description": "User-visible actions on the NFT: **mint**, **burn** and the on-chain metadata generator `tokenURI`.",
+            "file": "src/AlchemistV3Position.sol",
+            "highlight": [
+                {
+                    "start": 60,
+                    "end": 88
+                }
+            ],
+            "title": "",
+            "id": "6844"
+        },
+        {
+            "type": "highlight",
+            "description": "The `_update` override automatically resets mint allowances whenever a position NFT changes hands – tying the NFT and core logic together.",
+            "file": "src/AlchemistV3Position.sol",
+            "highlight": [
+                {
+                    "start": 98,
+                    "end": 107
+                }
+            ],
+            "title": "",
+            "id": "6845"
+        },
+        {
+            "type": "textOnly",
+            "description": "You now know where each core contract lives, their high-level purpose, and which methods form the public surface area.  Dive into the full implementations when you need details, starting from the entry points highlighted above.",
+            "title": "",
+            "id": "6846"
+        }
+    ]
+}

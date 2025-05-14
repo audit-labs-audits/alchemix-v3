@@ -1,0 +1,110 @@
+{
+    "title": "3.5: NFT Metadata Generator: On-Chain SVG & JSON",
+    "id": "EkOyY5Mm3fzR2p72Z4IGihUyjTnqbmR19oksY+04xkw=",
+    "originalId": 377,
+    "position": 12,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "In this short tour you will see how `NFTMetadataGenerator` builds on-chain images, JSON metadata, and full `tokenURIs`, and how the `Position-NFT` contracts lean on it.",
+            "title": "",
+            "id": "6664"
+        },
+        {
+            "type": "highlight",
+            "description": "The three hard-coded SVG colour constants that every Position-NFT artwork shares:",
+            "file": "src/libraries/NFTMetadataGenerator.sol",
+            "highlight": [
+                {
+                    "start": 9,
+                    "end": 12
+                }
+            ],
+            "title": "",
+            "id": "6665"
+        },
+        {
+            "type": "textOnly",
+            "description": "- `SVG_BG_COLOR` = `#d4c3b7` (sand background)\n- `SVG_TEXT_COLOR` = `#0a3a60` (dark blue text)\n- `SVG_ACCENT_COLOR` = `#0a3a60` (dark blue accents)\nThese values are later interpolated into the generated SVG.",
+            "title": "",
+            "id": "6666"
+        },
+        {
+            "type": "highlight",
+            "description": "generateSVG() assembles an SVG image with abi.encodePacked.  Notice how the caller-supplied `title` (l.32) and the numeric `tokenId` (l.40) are embedded directly.",
+            "file": "src/libraries/NFTMetadataGenerator.sol",
+            "highlight": [
+                {
+                    "start": 19,
+                    "end": 44
+                }
+            ],
+            "title": "",
+            "id": "6667"
+        },
+        {
+            "type": "textOnly",
+            "description": "The function returns a single string that already contains the full **<svg>** document. Because `abi.encodePacked` concatenates bytes, no external storage or loops are needed.",
+            "title": "",
+            "id": "6668"
+        },
+        {
+            "type": "highlight",
+            "description": "generateJSONString() wraps the SVG in ERC-721 compatible JSON:\n- name  -> \"AlchemistV3 Position #<id>\" (l.56-58)\n- description -> static human text (l.59)\n- image -> an in-place data: URI that contains the Base64-encoded SVG (l.60-62)\nThe entire JSON blob is itself Base64-encoded (l.54).",
+            "file": "src/libraries/NFTMetadataGenerator.sol",
+            "highlight": [
+                {
+                    "start": 53,
+                    "end": 65
+                }
+            ],
+            "title": "",
+            "id": "6669"
+        },
+        {
+            "type": "highlight",
+            "description": "`generateTokenURI()` glues everything together; it calls the previous helpers and prefixes the result with the `data:application/json;base64,` scheme.",
+            "file": "src/libraries/NFTMetadataGenerator.sol",
+            "highlight": [
+                {
+                    "start": 74,
+                    "end": 78
+                }
+            ],
+            "title": "",
+            "id": "6670"
+        },
+        {
+            "type": "highlight",
+            "description": "`AlchemistV3Position`’s `tokenURI` implementation simply forwards the request:",
+            "file": "src/AlchemistV3Position.sol",
+            "highlight": [
+                {
+                    "start": 84,
+                    "end": 88
+                }
+            ],
+            "title": "",
+            "id": "6671"
+        },
+        {
+            "type": "highlight",
+            "description": "The `Transmuter NFT` does the same:",
+            "file": "src/Transmuter.sol",
+            "highlight": [
+                {
+                    "start": 160,
+                    "end": 164
+                }
+            ],
+            "title": "",
+            "id": "6672"
+        },
+        {
+            "type": "textOnly",
+            "description": "Whenever an NFT marketplace or wallet asks either `Position-NFT` contract for `tokenURI`, the call is routed to `NFTMetadataGenerator`. This keeps metadata fully on-chain, ensures a uniform styling via the three colour constants, and avoids duplicating logic across contracts.",
+            "title": "",
+            "id": "6673"
+        }
+    ]
+}

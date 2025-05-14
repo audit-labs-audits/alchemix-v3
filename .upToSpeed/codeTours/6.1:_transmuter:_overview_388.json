@@ -1,0 +1,105 @@
+{
+    "title": "6.1: Transmuter: Overview",
+    "id": "1oi9CSZLEugWpZO6zIFN789jY6YNMK0OH6xhzmE8zbo=",
+    "originalId": 388,
+    "position": 23,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "We begin with the **public interface** of the `Transmuter`. The **interface** tells us the shape of positions, configuration parameters, **read-only getters**, **governance hooks**, **user flows**, and **emitted events**. Think of it as the contract’s `menu` – everything an external caller can rely on.",
+            "title": "",
+            "id": "6771"
+        },
+        {
+            "type": "highlight",
+            "description": "Two structs define the primary data handled by the Transmuter.\n- lines 7-14 – StakingPosition records how much was staked and when it can be claimed.\n- lines 16-23 – TransmuterInitializationParams bundles constructor inputs such as token addresses, fees, and the staking graph size.",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 6,
+                    "end": 23
+                }
+            ],
+            "title": "",
+            "id": "6772"
+        },
+        {
+            "type": "highlight",
+            "description": "Read-only view functions expose contract state:\n- alchemist / admin / pendingAdmin (lines 25-38)\n- version (40-42)\n- syntheticToken, depositCap, exitFee, graphSize, transmutationFee, timeToTransmute, totalLocked (43-66)\n- alchemists(index) – iterate registered alchemists (67-69)\n- protocolFeeReceiver (70)",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 25,
+                    "end": 71
+                }
+            ],
+            "title": "",
+            "id": "6773"
+        },
+        {
+            "type": "highlight",
+            "description": "Governance-only mutators allow the admin to adjust settings:\n- setPendingAdmin / acceptAdmin (72-93) – two-step admin transfer.\n- setAlchemist (94-98) – redirect redemption source.\n- setDepositCap, setTransmutationTime, setTransmutationFee, setExitFee (99-128) – risk knobs.\n- setProtocolFeeReceiver (130-137) – where collected fees are sent.",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 72,
+                    "end": 138
+                }
+            ],
+            "title": "",
+            "id": "6774"
+        },
+        {
+            "type": "highlight",
+            "description": "Core user flows:\n- getPosition (139-145) – inspect an NFT position.\n- createRedemption (146-153) – lock synthetic tokens and mint NFT.\n- claimRedemption (155-163) – burn NFT and receive underlying.\n- queryGraph (165-171) – helper for off-chain accounting of pending redemptions.",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 139,
+                    "end": 172
+                }
+            ],
+            "title": "",
+            "id": "6775"
+        },
+        {
+            "type": "highlight",
+            "description": "Events broadcast state changes & user activity, enabling off-chain indexers to react:\n- `AdminUpdated` / `PendingAdminUpdated` / `AlchemistUpdated`\n- `PositionCreated` / `PositionClaimed`\n- `GraphSizeUpdated`, `DepositCapUpdated`, `TransmutationTimeUpdated`, `TransmutationFeeUpdated`, `ExitFeeUpdated`, `ProtocolFeeReceiverUpdated`",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 173,
+                    "end": 230
+                }
+            ],
+            "title": "",
+            "id": "6776"
+        },
+        {
+            "type": "highlight",
+            "description": "Custom errors make reverts gas-efficient and self-describing.\nHighlighted failure modes include:\n- `NotRegisteredAlchemist` / `AlchemistDuplicateEntry`\n- `DepositCapReached` / `DepositZeroAmount` / `DepositTooLarge`\n- `PositionNotFound` / `PrematureClaim`\n- `CallerNotOwner`",
+            "file": "src/base/TransmuterErrors.sol",
+            "highlight": [
+                {
+                    "start": 4,
+                    "end": 18
+                }
+            ],
+            "title": "",
+            "id": "6777"
+        },
+        {
+            "type": "highlight",
+            "description": "The implementation file links everything together.\nlines 18-22 show the contract-level comment and the `contract Transmuter is ITransmuter, ERC721` declaration – confirming that the logic we’ll explore later faithfully implements the interface and represents each position as an **ERC-721 NFT**.",
+            "file": "src/Transmuter.sol",
+            "highlight": [
+                {
+                    "start": 18,
+                    "end": 22
+                }
+            ],
+            "title": "",
+            "id": "6778"
+        }
+    ]
+}

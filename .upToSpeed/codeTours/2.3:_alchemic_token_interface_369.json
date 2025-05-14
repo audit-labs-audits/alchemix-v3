@@ -1,0 +1,117 @@
+{
+    "title": "2.3: Alchemic Token Interface",
+    "id": "x/7fu5BlaUAr+IngU5WMe1mVzvbeHDWoS+lgnv6imvc=",
+    "originalId": 369,
+    "position": 4,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "We start at the `public interface` every **synthetic Alchemix token** must implement. All bookkeeping and permission mechanisms we are interested in are defined here, extending the usual `ERC-20 API`.",
+            "title": "",
+            "id": "6588"
+        },
+        {
+            "type": "highlight",
+            "description": "`hasMinted(address)` is a read-only counter.  Whatever contract mints the token is expected to increase this number each time it creates new supply for `account`, allowing the system (and integrations) to track the lifetime total that address ever minted.",
+            "file": "src/interfaces/IAlchemicToken.sol",
+            "highlight": [
+                {
+                    "start": 6,
+                    "end": 15
+                }
+            ],
+            "title": "",
+            "id": "6589"
+        },
+        {
+            "type": "highlight",
+            "description": "`lowerHasMinted(uint256)` lets an address *reduce* its own lifetime counter.  The comment says the call reverts unless the caller is on a whitelist – a safety valve for debt-reconciliation or migrations.",
+            "file": "src/interfaces/IAlchemicToken.sol",
+            "highlight": [
+                {
+                    "start": 16,
+                    "end": 22
+                }
+            ],
+            "title": "",
+            "id": "6590"
+        },
+        {
+            "type": "highlight",
+            "description": "Administrators control two on-chain permission tables:\n- `setCeiling(address,uint256)` – per-minter hard cap (\"ceiling\") on how many tokens that address may ever mint.\n- `setWhitelist(address,bool)` – toggles whether an address may call privileged functions like `lowerHasMinted` or `mint`.",
+            "file": "src/interfaces/IAlchemicToken.sol",
+            "highlight": [
+                {
+                    "start": 23,
+                    "end": 38
+                }
+            ],
+            "title": "",
+            "id": "6591"
+        },
+        {
+            "type": "highlight",
+            "description": "The core supply-changing hooks:\n- `mint(recipient,amount)` – creates new synthetic tokens (and therefore new debt inside the Alchemist).\n- `burn(amount)` – destroys caller’s tokens, removing debt.",
+            "file": "src/interfaces/IAlchemicToken.sol",
+            "highlight": [
+                {
+                    "start": 39,
+                    "end": 41
+                }
+            ],
+            "title": "",
+            "id": "6592"
+        },
+        {
+            "type": "textOnly",
+            "description": "Next we look at how the `Alchemist contract` (the lending engine) actually uses the `token interface`. ",
+            "title": "",
+            "id": "6593"
+        },
+        {
+            "type": "highlight",
+            "description": "Inside the private `_mint` helper the Alchemist records debt on the NFT position (lines 714-721) and finally mints ERC-20 tokens to the user (line 724) via `TokenUtils.safeMint`, which in turn calls `IAlchemicToken.mint`.",
+            "file": "src/AlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 710,
+                    "end": 725
+                }
+            ],
+            "title": "",
+            "id": "6594"
+        },
+        {
+            "type": "highlight",
+            "description": "Conversely, the public `burn` action removes debt and then destroys the caller’s tokens using `TokenUtils.safeBurnFrom` (line 472) – this calls `IAlchemicToken.burnFrom`/`burn` under the hood.",
+            "file": "src/AlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 447,
+                    "end": 475
+                }
+            ],
+            "title": "",
+            "id": "6595"
+        },
+        {
+            "type": "highlight",
+            "description": "Tests show the typical admin flow: give the `Alchemist` unlimited minting head-room by whitelisting it and setting its ceiling to `type(uint256).max`.",
+            "file": "src/test/IntegrationTest.t.sol",
+            "highlight": [
+                {
+                    "start": 191,
+                    "end": 195
+                }
+            ],
+            "title": "",
+            "id": "6596"
+        },
+        {
+            "type": "textOnly",
+            "description": "Putting it all together:\n- `hasMinted` & `ceiling` form a permanent ledger of how much any address has ever created.\n- `lowerHasMinted` + `whitelist` let trusted actors correct that ledger when necessary.\n- `AlchemistV3` is the primary minter/burner; it must be whitelisted and its ceiling configured at deployment.\nThese mechanisms provide transparent, on-chain constraints around synthetic supply while still keeping mint/burn logic inside the lending engine.",
+            "title": "",
+            "id": "6597"
+        }
+    ]
+}

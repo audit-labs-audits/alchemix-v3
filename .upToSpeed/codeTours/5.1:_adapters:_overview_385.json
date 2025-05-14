@@ -1,0 +1,72 @@
+{
+    "title": "5.1: Adapters: Overview",
+    "id": "bvSR1mGrq/gnQrVVronuAVA+62lU281TNqxFlKE2ApI=",
+    "originalId": 385,
+    "position": 20,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "The adapters component lives under `src/adapters`.  In this tour we focus on the four files that establish the basic adapter vocabulary:\n\n- `ITokenAdapter.sol` – the canonical interface all token-level adapters must satisfy.\n- `EulerUSDCAdapter.sol` – a concrete implementation for Euler’s interest-bearing USDC token.\n- `ETHUSDConverter.sol` – a small library that converts between ETH and USD amounts using a Chainlink price feed.\n- `ETHUSDPriceFeedAdapter.sol` – an on-chain wrapper that exposes the converter behind a simple price-feed interface.",
+            "title": "",
+            "id": "6743"
+        },
+        {
+            "type": "highlight",
+            "description": "ITokenAdapter defines the four read-only functions every adapter must expose.  Notice that the interface contains no state – only these view functions which external contracts, such as the vaults, can call to discover adapter details or fetch a price.",
+            "file": "src/interfaces/ITokenAdapter.sol",
+            "highlight": [
+                {
+                    "start": 3,
+                    "end": 25
+                }
+            ],
+            "title": "",
+            "id": "6744"
+        },
+        {
+            "type": "highlight",
+            "description": "EulerUSDCAdapter is an example of an adapter that fulfils the interface.  Lines 11-15 declare:  \n- `version` – a human-readable constant so clients can detect breaking changes.  \n- `token` & `underlyingToken` – `immutable` addresses recorded once in the constructor (lines 17-19).  These parameters tell external contracts which yield token is handled and what the underlying asset is.",
+            "file": "src/adapters/EulerUSDCAdapter.sol",
+            "highlight": [
+                {
+                    "start": 9,
+                    "end": 19
+                }
+            ],
+            "title": "",
+            "id": "6745"
+        },
+        {
+            "type": "highlight",
+            "description": "ETHUSDConverter is a Solidity `library` (line 6).  The header comment and custom errors (lines 7-10) announce its purpose: safe conversion between ETH values and their USD representation, relying on a Chainlink price feed passed in by callers.",
+            "file": "src/adapters/ETHUSDConverter.sol",
+            "highlight": [
+                {
+                    "start": 1,
+                    "end": 10
+                }
+            ],
+            "title": "",
+            "id": "6746"
+        },
+        {
+            "type": "highlight",
+            "description": "ETHUSDPriceFeedAdapter wraps the converter into a contract.  Lines 8-24 declare the `IPriceFeedAdapter` interface it implements.  Lines 27-41 show the adapter’s own state: the chosen price-feed address, an acceptable staleness window, and the decimals of the underlying token – all supplied through the constructor so the same code can be deployed to different chains or tokens.",
+            "file": "src/adapters/ETHUSDPriceFeedAdapter.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 41
+                }
+            ],
+            "title": "",
+            "id": "6747"
+        },
+        {
+            "type": "textOnly",
+            "description": "Together these four files illustrate the adapter pattern:  \n1. A thin, immutable contract (`EulerUSDCAdapter`) or library wrapper (`ETHUSDPriceFeedAdapter`) declares what it adapts via constructor arguments.  \n2. Callers interact only through small view functions defined in an interface (`ITokenAdapter` or `IPriceFeedAdapter`).  \n3. Auxiliary maths (`ETHUSDConverter`) stays separate, ensuring each adapter remains focused on translating a single asset or price feed.",
+            "title": "",
+            "id": "6748"
+        }
+    ]
+}

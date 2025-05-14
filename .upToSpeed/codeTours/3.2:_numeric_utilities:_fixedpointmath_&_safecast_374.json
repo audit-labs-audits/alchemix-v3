@@ -1,0 +1,169 @@
+{
+  "title": "3.2: Numeric Utilities: FixedPointMath & SafeCast",
+  "id": "x/5USHqzAXHFPghKyFv4J+4LSlW57xnlQm+Lt0Kc0zE=",
+  "originalId": 374,
+  "position": 9,
+  "steps": [
+    {
+      "type": "textOnly",
+      "description": "We begin with the helper that every other module leans on – `FixedPointMath`.  It stores decimal numbers with 18-decimals of precision and exposes arithmetic helpers that automatically keep that scale.",
+      "title": "",
+      "id": "6627"
+    },
+    {
+      "type": "highlight",
+      "description": "DECIMALS is hard-coded to 18 and ONE = 10 ** 18 – this single constant encodes the value 1.0 in the chosen fixed-point representation.",
+      "file": "src/libraries/FixedPointMath.sol",
+      "highlight": [
+        {
+          "start": 9,
+          "end": 13
+        }
+      ],
+      "title": "",
+      "id": "6628"
+    },
+    {
+      "type": "highlight",
+      "description": "Every fixed-point value is wrapped in the lightweight struct Number which contains one field – n – the raw scaled uint256.",
+      "file": "src/libraries/FixedPointMath.sol",
+      "highlight": [
+        {
+          "start": 16,
+          "end": 19
+        }
+      ],
+      "title": "",
+      "id": "6629"
+    },
+    {
+      "type": "highlight",
+      "description": "encodeRaw(value) multiplies an integer by ONE, returning the raw scaled uint256; encode(value) simply wraps that result in Number.",
+      "file": "src/libraries/FixedPointMath.sol",
+      "highlight": [
+        {
+          "start": 27,
+          "end": 40
+        }
+      ],
+      "title": "",
+      "id": "6630"
+    },
+    {
+      "type": "highlight",
+      "description": "Utility constructors: max() returns the biggest possible scaled value; rational(n,d) builds n / d by encoding the numerator and then dividing by the denominator.",
+      "file": "src/libraries/FixedPointMath.sol",
+      "highlight": [
+        {
+          "start": 48,
+          "end": 62
+        }
+      ],
+      "title": "",
+      "id": "6631"
+    },
+    {
+      "type": "highlight",
+      "description": "add overloads: Number + Number simply adds their raw fields; Number + uint256 transparently encodes the integer before adding – callers do not need to scale literals themselves.",
+      "file": "src/libraries/FixedPointMath.sol",
+      "highlight": [
+        {
+          "start": 71,
+          "end": 84
+        }
+      ],
+      "title": "",
+      "id": "6632"
+    },
+    {
+      "type": "highlight",
+      "description": "sub follows the same pattern – direct subtraction for Number vs. Number and automatic encoding when the right-hand operand is a plain integer.",
+      "file": "src/libraries/FixedPointMath.sol",
+      "highlight": [
+        {
+          "start": 93,
+          "end": 106
+        }
+      ],
+      "title": "",
+      "id": "6633"
+    },
+    {
+      "type": "highlight",
+      "description": "mul/div: When both operands are Numbers the product is divided by ONE to re-normalise the scale (line 116).  Multiplying by an integer or dividing by an integer needs no rescale.",
+      "file": "src/libraries/FixedPointMath.sol",
+      "highlight": [
+        {
+          "start": 115,
+          "end": 139
+        }
+      ],
+      "title": "",
+      "id": "6634"
+    },
+    {
+      "type": "highlight",
+      "description": "cmp returns −1 / 0 / 1 depending on ordering, mirroring the behaviour of many standard libraries; equals is the shorter boolean check.",
+      "file": "src/libraries/FixedPointMath.sol",
+      "highlight": [
+        {
+          "start": 150,
+          "end": 172
+        }
+      ],
+      "title": "",
+      "id": "6635"
+    },
+    {
+      "type": "highlight",
+      "description": "`truncate` removes the fractional component by dividing by `ONE`, yielding the integer part of the fixed-point number.",
+      "file": "src/libraries/FixedPointMath.sol",
+      "highlight": [
+        {
+          "start": 175,
+          "end": 181
+        }
+      ],
+      "title": "",
+      "id": "6636"
+    },
+    {
+      "type": "textOnly",
+      "description": "Casting between signed and unsigned values is concentrated in `SafeCast` – every **narrowing conversion** reverts instead of silently wrapping.",
+      "title": "",
+      "id": "6637"
+    },
+    {
+      "type": "highlight",
+      "description": "`toInt256(uint256)` reverts when the input would overflow `int256`; `toUint256(int256)` reverts on negative values – both guard against undefined behaviour.",
+      "file": "src/libraries/SafeCast.sol",
+      "highlight": [
+        {
+          "start": 12,
+          "end": 27
+        }
+      ],
+      "title": "",
+      "id": "6638"
+    },
+    {
+      "type": "highlight",
+      "description": "`uint256ToUint128` enforces the down-cast is in range; `uint128ToUint256` is a safe, trivial up-cast.",
+      "file": "src/libraries/SafeCast.sol",
+      "highlight": [
+        {
+          "start": 32,
+          "end": 45
+        }
+      ],
+      "title": "",
+      "id": "6639"
+    },
+    {
+      "type": "textOnly",
+      "description": "With these two helpers in mind you can now recognise every place in the codebase where **precise decimal math** or **safe integer casting** is performed.",
+      "title": "",
+      "id": "6640"
+    }
+  ]
+}

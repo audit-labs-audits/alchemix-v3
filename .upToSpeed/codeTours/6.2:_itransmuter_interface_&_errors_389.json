@@ -1,0 +1,160 @@
+{
+    "title": "6.2: ITransmuter Interface & Errors",
+    "id": "SNOWwpD8YCWF/iivLRISCQZwg9oH+NLF68EaUSUpSng=",
+    "originalId": 389,
+    "position": 24,
+    "steps": [
+        {
+            "type": "highlight",
+            "description": "The Transmuter records every user stake in an ERC-721 position.  Lines 7-14 define the data kept for each NFT:",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 6,
+                    "end": 14
+                }
+            ],
+            "title": "",
+            "id": "6779"
+        },
+        {
+            "type": "textOnly",
+            "description": "* `amount` – how many synthetic (debt) tokens the user locked.\n* `startBlock` – the block number when the stake was opened.\n* `maturationBlock` – `startBlock` + `timeToTransmute`.  The position is claimable once the chain reaches this block.",
+            "title": "",
+            "id": "6780"
+        },
+        {
+            "type": "highlight",
+            "description": "The constructor of Transmuter.sol receives one packed struct.  Each field wires an external component or an economic parameter:",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 16,
+                    "end": 23
+                }
+            ],
+            "title": "",
+            "id": "6781"
+        },
+        {
+            "type": "textOnly",
+            "description": "* `syntheticToken` – ERC20 debt token the user deposits and which is burned on successful transmutation.\n* `feeReceiver` – address that receives protocol fees taken during claims.\n* `timeToTransmute` – default lock period (in blocks).\n* `transmutationFee` – basis-points fee charged on the portion that fully transmutes.\n* `exitFee` – basis-points fee on the still-locked portion when a user exits early.\n* `graphSize` – size (in blocks) of the Fenwick staking graph that tracks outstanding debt.",
+            "title": "",
+            "id": "6782"
+        },
+        {
+            "type": "highlight",
+            "description": "Custom errors keep byte-code small and make test expectations explicit:",
+            "file": "src/base/TransmuterErrors.sol",
+            "highlight": [
+                {
+                    "start": 1,
+                    "end": 18
+                }
+            ],
+            "title": "",
+            "id": "6783"
+        },
+        {
+            "type": "textOnly",
+            "description": "* `NotRegisteredAlchemist` – revert if an alchemist interacts without being whitelisted (would be thrown inside `Transmuter` when such registry logic is invoked).\n* `AlchemistDuplicateEntry` – revert when attempting to register the same alchemist twice.\n* `DepositCapReached` – `createRedemption()` refuses because totalLocked + deposit > depositCap or supply limit (`Transmuter.sol` l.176-183).\n* `DepositZeroAmount` – `createRedemption()` called with 0 (l.172-175).\n* `PositionNotFound` – `claimRedemption()` given an id that never existed or was already claimed (l.202-205).\n* `PrematureClaim` – interface reserves this for claiming before maturation, the concrete implementation instead computes blocksLeft and simply returns 0 transmuted; older versions threw this error.\n* `DepositTooLarge` – reserved for future logic where a single deposit might exceed cap.\n* `CallerNotOwner` – `claimRedemption()` called by someone that does not own the position **NFT** (l.212-214).",
+            "title": "",
+            "id": "6784"
+        },
+        {
+            "type": "highlight",
+            "description": "Read-only accessors expose the contract’s configuration and state so that UIs do not need to decode storage:",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 25,
+                    "end": 71
+                }
+            ],
+            "title": "",
+            "id": "6785"
+        },
+        {
+            "type": "textOnly",
+            "description": "- `alchemist()` – address of the `AlchemistV3` backing this transmuter.\n- `admin()`/`pendingAdmin()` – two-step governance roles.\n- `version()` – hard-coded semantic version string.\n- `syntheticToken()` – debt token address.\n- `depositCap()` – maximum totalLocked allowed.\n- `exitFee()` – basis-points charged when exiting early.\n- `graphSize()` – number of blocks covered by staking graph window.\n- `transmutationFee()` – fee on successful conversions.\n- `timeToTransmute()` – default lock length in blocks.\n- `totalLocked()` – current sum of all position.amount.\n- `alchemists(idx)` – enumerates registered alchemist helpers.\n- `protocolFeeReceiver()` – address accumulating protocol fees.",
+            "title": "",
+            "id": "6786"
+        },
+        {
+            "type": "highlight",
+            "description": "Governance mutations are gated by onlyAdmin in the implementation.  The pattern uses a pending slot to prevent accidental loss of control:",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 72,
+                    "end": 98
+                }
+            ],
+            "title": "",
+            "id": "6787"
+        },
+        {
+            "type": "textOnly",
+            "description": "1. `setPendingAdmin(newAdmin)` – current admin nominates.\n2. `acceptAdmin()` – newAdmin accepts, completing the transfer.\n3. `setAlchemist(address)` – admin can swap the underlying Alchemist contract.",
+            "title": "",
+            "id": "6788"
+        },
+        {
+            "type": "highlight",
+            "description": "Admin may tune economic parameters at runtime; each `function` validates its `input` then emits an `update event`: ",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 99,
+                    "end": 138
+                }
+            ],
+            "title": "",
+            "id": "6789"
+        },
+        {
+            "type": "textOnly",
+            "description": "- `setDepositCap(cap)` – must be ≥ totalLocked so existing stakes remain safe.\n- `setTransmutationTime(time)` – sets default maturation horizon.\n- `setTransmutationFee(fee)` – fee ≤ 10 000 BPS guard in implementation.\n- `setExitFee(fee)` – same BPS guard.\n- `setProtocolFeeReceiver(addr)` – cannot set to zero.",
+            "title": "",
+            "id": "6790"
+        },
+        {
+            "type": "highlight",
+            "description": "The public API a user cares about consists of three `functions`: ",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 146,
+                    "end": 171
+                }
+            ],
+            "title": "",
+            "id": "6791"
+        },
+        {
+            "type": "textOnly",
+            "description": "- `createRedemption(depositAmount)` – mints an NFT, transfers synths in, updates the staking graph.\n- `claimRedemption(id)` – burns the NFT, redeems matured yield tokens, refunds remaining synths, pays protocol fees.\n- `queryGraph(startBlock, endBlock)` – view helper that sums the debt still scheduled to transmute within a block range – useful for risk dashboards.",
+            "title": "",
+            "id": "6792"
+        },
+        {
+            "type": "highlight",
+            "description": "**Events** allow off-chain indexers to follow governance, deposits, claims, and parameter tweaks:",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 173,
+                    "end": 230
+                }
+            ],
+            "title": "",
+            "id": "6793"
+        },
+        {
+            "type": "textOnly",
+            "description": "* `AdminUpdated` / `PendingAdminUpdated` – emit in the two-step role transfer.\n* `AlchemistUpdated` – new alchemist registered.\n* `PositionCreated` – user deposit recorded (creator, amount, nftId).\n* `PositionClaimed` – final settlement (claimer, amountClaimed, amountUnclaimed).\n* `GraphSizeUpdated` – staking graph length changed (implementation only).\n* `DepositCapUpdated`, `TransmutationTimeUpdated`, `TransmutationFeeUpdated`, `ExitFeeUpdated` – parameter tuning.\n* `ProtocolFeeReceiverUpdated` – fee destination changed.",
+            "title": "",
+            "id": "6794"
+        }
+    ]
+}

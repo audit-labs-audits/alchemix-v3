@@ -1,0 +1,149 @@
+{
+  "title": "5.2: Token Adapter: Euler USDC",
+  "id": "cYElcOm3ab90VBVj3P1Ma7f0LjUKjMH+D8NFO2rmamw=",
+  "originalId": 386,
+  "position": 21,
+  "steps": [
+    {
+      "type": "textOnly",
+      "description": "Alchemix treats `yield tokens` (`ERC-4626` vault shares, interest-bearing tokens, etc.) via small plug-ins called adapters. Each adapter obeys the `ITokenAdapter` interface so the rest of the protocol can ask a simple question: “how many underlying tokens does one share represent right now?” We will walk through the interface and then see how the concrete `EulerUSDCAdapter` fulfils it.",
+      "title": "",
+      "id": "6758"
+    },
+    {
+      "type": "highlight",
+      "description": "version() (line 9) returns a short semantic-version string so core contracts know which implementation they are talking to.",
+      "file": "src/interfaces/ITokenAdapter.sol",
+      "highlight": [
+        {
+          "start": 6,
+          "end": 10
+        }
+      ],
+      "title": "",
+      "id": "6759"
+    },
+    {
+      "type": "highlight",
+      "description": "token() (line 14) exposes the address of the yield token (the ERC-4626 share or interest-bearing token) governed by this adapter.",
+      "file": "src/interfaces/ITokenAdapter.sol",
+      "highlight": [
+        {
+          "start": 11,
+          "end": 15
+        }
+      ],
+      "title": "",
+      "id": "6760"
+    },
+    {
+      "type": "highlight",
+      "description": "underlyingToken() (line 19) tells the caller which plain ERC-20 asset backs the yield token.",
+      "file": "src/interfaces/ITokenAdapter.sol",
+      "highlight": [
+        {
+          "start": 16,
+          "end": 20
+        }
+      ],
+      "title": "",
+      "id": "6761"
+    },
+    {
+      "type": "highlight",
+      "description": "price() (line 25) is the crucial hook: it must return the amount of underlying redeemable for exactly 1 whole yield token.",
+      "file": "src/interfaces/ITokenAdapter.sol",
+      "highlight": [
+        {
+          "start": 21,
+          "end": 25
+        }
+      ],
+      "title": "",
+      "id": "6762"
+    },
+    {
+      "type": "textOnly",
+      "description": "Now let’s see how the concrete adapter for `Euler’s USDC vault` implements those requirements.",
+      "title": "",
+      "id": "6763"
+    },
+    {
+      "type": "highlight",
+      "description": "line 11 defines a public constant version = \"1.0.0\" – this is what version() will implicitly return through Solidity’s public-constant getter, satisfying the first interface function.",
+      "file": "src/adapters/EulerUSDCAdapter.sol",
+      "highlight": [
+        {
+          "start": 9,
+          "end": 12
+        }
+      ],
+      "title": "",
+      "id": "6764"
+    },
+    {
+      "type": "highlight",
+      "description": "Lines 13-15 declare immutable token and underlyingToken.  Once written in the constructor, the addresses cannot change, so every price() call refers to the same vault share and its underlying USDC.",
+      "file": "src/adapters/EulerUSDCAdapter.sol",
+      "highlight": [
+        {
+          "start": 13,
+          "end": 16
+        }
+      ],
+      "title": "",
+      "id": "6765"
+    },
+    {
+      "type": "highlight",
+      "description": "The constructor (lines 17-20) captures those addresses at deployment, wiring the adapter permanently to a specific Euler eUSDC vault and to USDC as its underlying.",
+      "file": "src/adapters/EulerUSDCAdapter.sol",
+      "highlight": [
+        {
+          "start": 17,
+          "end": 20
+        }
+      ],
+      "title": "",
+      "id": "6766"
+    },
+    {
+      "type": "highlight",
+      "description": "price() implementation (lines 22-24):\n1. Calls `IERC4626(token).convertToAssets(10**TokenUtils.expectDecimals(token))` – i.e. converts exactly one share (1 × 10^decimals) into the amount of underlying `USDC`.\n2. Relies on the **ERC-4626** vault’s up-to-date conversion logic, so the result moves with accumulated interest.",
+      "file": "src/adapters/EulerUSDCAdapter.sol",
+      "highlight": [
+        {
+          "start": 22,
+          "end": 24
+        }
+      ],
+      "title": "",
+      "id": "6767"
+    },
+    {
+      "type": "textOnly",
+      "description": "`price()` needs the share’s decimals so that **\"one whole token\"** is converted. That information comes from `TokenUtils.expectDecimals`.",
+      "title": "",
+      "id": "6768"
+    },
+    {
+      "type": "highlight",
+      "description": "`expectDecimals()` (lines 26-34) performs a low-level staticcall to the **ERC-20**’s `decimals()` selector and decodes the `uint8` value, reverting if the call fails. The adapter uses this helper to remain safe and generic across tokens with different decimal counts.",
+      "file": "src/libraries/TokenUtils.sol",
+      "highlight": [
+        {
+          "start": 26,
+          "end": 34
+        }
+      ],
+      "title": "",
+      "id": "6769"
+    },
+    {
+      "type": "textOnly",
+      "description": "Putting it together: any Alchemix component that needs the live price of the Euler `eUSDC` yield token just calls `EulerUSDCAdapter.price()`. The adapter forwards to the vault’s `convertToAssets` logic, scales for decimals, and returns the precise USDC-per-share ratio – all through the common `ITokenAdapter` abstraction.",
+      "title": "",
+      "id": "6770"
+    }
+  ]
+}

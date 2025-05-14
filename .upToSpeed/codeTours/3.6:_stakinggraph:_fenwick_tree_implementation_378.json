@@ -1,0 +1,149 @@
+{
+    "title": "3.6: StakingGraph: Fenwick Tree Implementation",
+    "id": "imOfucxmIib+7fCvB9X/5C7POA/vfj67Q7bBrKmjg+s=",
+    "originalId": 378,
+    "position": 13,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "We are touring `StakingGraph.sol`, a **library** that lets the **Transmuter** keep a per-block schedule of every stake’s \"size\" (raw amount) and \"size × block\" (the running first-moment). Both numbers are stored in a single **Fenwick tree** so any prefix sum (up to an arbitrary block) can be answered in `O(log N)` gas.",
+            "title": "",
+            "id": "6674"
+        },
+        {
+            "type": "highlight",
+            "description": "`DELTA_BITS` carves out the lower 112 bits of every tree node for the raw amount (Δ). The upper 144 bits keep the running product (Δ · block). `DELTA_MASK` isolates the lower field. `PRODUCT_BITS` (=144) is derived automatically.",
+            "file": "src/libraries/StakingGraph.sol",
+            "highlight": [
+                {
+                    "start": 18,
+                    "end": 25
+                }
+            ],
+            "title": "",
+            "id": "6675"
+        },
+        {
+            "type": "highlight",
+            "description": "`GRAPH_MAX` is the highest block index the data structure can ever track (≈ 2^(PRODUCT_BITS – DELTA_BITS) = 2^32 when the 112/144 split is used).",
+            "file": "src/libraries/StakingGraph.sol",
+            "highlight": [
+                {
+                    "start": 32,
+                    "end": 34
+                }
+            ],
+            "title": "",
+            "id": "6676"
+        },
+        {
+            "type": "textOnly",
+            "description": "Because both sub-values are signed, the packing layout is:\n- `bits 0-111`   `Δ`  (raw stake delta)\n- `bits 112-255` `Π` (`Δ` × block)\nSign-extension rules in `Solidity` let the code unpack the two fields with simple bit-twiddling.",
+            "title": "",
+            "id": "6677"
+        },
+        {
+            "type": "highlight",
+            "description": "The graph itself is another Fenwick tree embedded in a struct:",
+            "file": "src/libraries/StakingGraph.sol",
+            "highlight": [
+                {
+                    "start": 36,
+                    "end": 39
+                }
+            ],
+            "title": "",
+            "id": "6678"
+        },
+        {
+            "type": "textOnly",
+            "description": "`size` is always a power of two, and the array `g` is declared one element larger than the theoretical maximum because Fenwick indexes start at 1.",
+            "title": "",
+            "id": "6679"
+        },
+        {
+            "type": "highlight",
+            "description": "`addStake` is the public entry-point that books a stake of `amount` over [`start`, `start+duration`). It first guards overflow/underflow conditions.",
+            "file": "src/libraries/StakingGraph.sol",
+            "highlight": [
+                {
+                    "start": 50,
+                    "end": 58
+                }
+            ],
+            "title": "",
+            "id": "6680"
+        },
+        {
+            "type": "highlight",
+            "description": "If the new expiration goes beyond the current `size`, the code rounds the desired length **up to the next power of two** so the Fenwick invariants stay intact, then copies the last cumulative value outward so future queries keep working.",
+            "file": "src/libraries/StakingGraph.sol",
+            "highlight": [
+                {
+                    "start": 60,
+                    "end": 76
+                }
+            ],
+            "title": "",
+            "id": "6681"
+        },
+        {
+            "type": "highlight",
+            "description": "Finally two `update` calls write the delta pair (+Δ, +Δ·start) at `start+1` and the opposite (−Δ, −Δ·expiration) at `expiration+1`. This converts a range add into two prefix adds, the classic **Fenwick trick**.",
+            "file": "src/libraries/StakingGraph.sol",
+            "highlight": [
+                {
+                    "start": 94,
+                    "end": 97
+                }
+            ],
+            "title": "",
+            "id": "6682"
+        },
+        {
+            "type": "highlight",
+            "description": "`queryStake` answers “how much stake becomes redeemable between `start` and `end`?” It queries the prefix sums at `end` and at `start-1`, then derives the integral:  `(end·Δ_end − Π_end) − (start·Δ_start − Π_start)`.",
+            "file": "src/libraries/StakingGraph.sol",
+            "highlight": [
+                {
+                    "start": 108,
+                    "end": 123
+                }
+            ],
+            "title": "",
+            "id": "6683"
+        },
+        {
+            "type": "highlight",
+            "description": "`update` walks *up* the tree (`index += index & -index`, implemented in assembly at line `158`). For each visited node it:\n1. Unpacks Δ and Π (lines `141-148`).\n2. Adds the incoming deltas (`149-150`).\n3. Re-packs after overflow checks (`152-156`).",
+            "file": "src/libraries/StakingGraph.sol",
+            "highlight": [
+                {
+                    "start": 132,
+                    "end": 160
+                }
+            ],
+            "title": "",
+            "id": "6684"
+        },
+        {
+            "type": "highlight",
+            "description": "`query` is the mirror image: it walks *down* the tree (`index -= index & -index`, `line 191`) accumulating the two fields, using the same unpack logic.",
+            "file": "src/libraries/StakingGraph.sol",
+            "highlight": [
+                {
+                    "start": 170,
+                    "end": 193
+                }
+            ],
+            "title": "",
+            "id": "6685"
+        },
+        {
+            "type": "textOnly",
+            "description": "Putting it all together, the Transmuter can record each user’s stake as a pair of range updates. The packed **double-Fenwick tree** lets it retrieve `total stake redeemable at block X` in `O(log N)` gas, while fitting both the raw number and its first moment in a `single storage slot`—cutting gas by nearly half.",
+            "title": "",
+            "id": "6686"
+        }
+    ]
+}

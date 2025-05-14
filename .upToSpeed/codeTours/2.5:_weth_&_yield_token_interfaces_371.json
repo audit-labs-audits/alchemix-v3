@@ -1,0 +1,116 @@
+{
+    "title": "2.5: WETH & Yield Token Interfaces",
+    "id": "LkeVUDzzTVgTaCS3UJiKOGllikNBXrFnumrTmdYS/Q0=",
+    "originalId": 371,
+    "position": 6,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "Native **ETH** and generic yield-bearing tokens are handled in the codebase through two tiny **interfaces**.  We will look at what each interface exposes and then see real **call-sites** so you can recognise the wrapping / pricing pattern across the code.",
+            "title": "",
+            "id": "6598"
+        },
+        {
+            "type": "highlight",
+            "description": "The Wrapped-ETH interface extends ERC-20 but only adds the two functions that bridge between native ETH and the ERC-20 world.",
+            "file": "src/interfaces/IWETH.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 20
+                }
+            ],
+            "title": "",
+            "id": "6599"
+        },
+        {
+            "type": "textOnly",
+            "description": "- `deposit()` – payable, consumes `msg.value`, mints `WETH` 1:1.\n- `withdraw(amount)` – burns `amount` of `WETH` held by the caller, then sends the same amount of native `ETH` back.\nThese two functions are all that is required anywhere else in the system to turn `ETH` into an **ERC-20** balance and back again.",
+            "title": "",
+            "id": "6600"
+        },
+        {
+            "type": "highlight",
+            "description": "AlchemistETHVault accepts WETH, then **unwraps** it immediately so it can keep a pure-ETH balance.  Note the call to `IWETH.withdraw`.",
+            "file": "src/AlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 54,
+                    "end": 62
+                }
+            ],
+            "title": "",
+            "id": "6601"
+        },
+        {
+            "type": "highlight",
+            "description": "In tests a user first calls `IWETH.deposit{value: amount}()` to obtain WETH before approving and sending it to the vault – showing the other side of the wrap/unwrap pair.",
+            "file": "src/test/AlchemistETHVault.t.sol",
+            "highlight": [
+                {
+                    "start": 196,
+                    "end": 199
+                }
+            ],
+            "title": "",
+            "id": "6602"
+        },
+        {
+            "type": "textOnly",
+            "description": "With that the life-cycle of **ETH** in the protocol is clear: external users wrap using `deposit()`, internal contracts unwrap again with `withdraw()` when they only need the native coin.",
+            "title": "",
+            "id": "6603"
+        },
+        {
+            "type": "highlight",
+            "description": "The second micro-interface standardises valuation for any interest-bearing or derivative token.",
+            "file": "src/interfaces/IYieldToken.sol",
+            "highlight": [
+                {
+                    "start": 1,
+                    "end": 5
+                }
+            ],
+            "title": "",
+            "id": "6604"
+        },
+        {
+            "type": "textOnly",
+            "description": "`price()` is a pure/view call that returns how many **underlying tokens** one whole `yield token` is currently worth (scaled to the `underlying`’s **decimals**). Every concrete `yield token` just needs to expose this read-only number.",
+            "title": "",
+            "id": "6605"
+        },
+        {
+            "type": "highlight",
+            "description": "Adapters wrap a concrete yield token and forward the `price()` call, enforcing the unified API.",
+            "file": "src/test/mocks/TokenAdapterMock.sol",
+            "highlight": [
+                {
+                    "start": 11,
+                    "end": 14
+                }
+            ],
+            "title": "",
+            "id": "6606"
+        },
+        {
+            "type": "highlight",
+            "description": "Core logic then relies on that adapter to convert between yield-token balances and underlying value using the returned price, without needing to know which concrete token is underneath.",
+            "file": "src/AlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 688,
+                    "end": 697
+                }
+            ],
+            "title": "",
+            "id": "6607"
+        },
+        {
+            "type": "textOnly",
+            "description": "Key takeaways:\n- `IWETH` is the one-stop bridge between native ETH and ERC-20 form; contracts call only `deposit()` / `withdraw()`.\n- `IYieldToken` exposes a single `price()` so every part of the protocol can value very different yield assets through an identical interface.\n- Adapters and vaults import these interfaces where they need wrapping or valuation, keeping the rest of the system agnostic to asset specifics.",
+            "title": "",
+            "id": "6608"
+        }
+    ]
+}

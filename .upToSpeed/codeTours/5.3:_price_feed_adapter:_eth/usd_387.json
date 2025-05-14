@@ -1,0 +1,118 @@
+{
+    "title": "5.3: Price Feed Adapter: ETH/USD",
+    "id": "fsid9atgc+9eeMdY5uN3vcPsplw3B6ohMWT1OLcN6OM=",
+    "originalId": 387,
+    "position": 22,
+    "steps": [
+        {
+            "type": "highlight",
+            "description": "The conversion logic lives in a **Solidity library**.  Lines 6-10 declare the library and its two custom errors.  Whenever `Chainlink` returns a non-positive price or data from an outdated / incomplete round, the library will `revert` with these errors, protecting the protocol from using bad oracle values.",
+            "file": "src/adapters/ETHUSDConverter.sol",
+            "highlight": [
+                {
+                    "start": 6,
+                    "end": 10
+                }
+            ],
+            "title": "",
+            "id": "6749"
+        },
+        {
+            "type": "highlight",
+            "description": "`ethToUSD()` converts an 18-decimal ETH amount into a 6-decimal USD amount.\n- Line 24 pulls the latest price & updateTime from the `Chainlink Aggregator`.\n- Lines 26-36 run three guards using the custom errors shown earlier.\n- Line 38 documents the decimal relationship (`ETH 18`, `price 8`, `USD 6`).\n- Line 39 performs the arithmetic:  `ethAmount * price / 1e20`.",
+            "file": "src/adapters/ETHUSDConverter.sol",
+            "highlight": [
+                {
+                    "start": 21,
+                    "end": 40
+                }
+            ],
+            "title": "",
+            "id": "6750"
+        },
+        {
+            "type": "highlight",
+            "description": "`usdToETH()` is the inverse calculation.\n- Lines 50-63 repeat the same safety checks on `Chainlink` data.\n- Line 66 revisits the **decimals** comment.\n- Line 67 converts 6-dec USD into 18-dec ETH:  `usdAmount * 1e20 / price`.",
+            "file": "src/adapters/ETHUSDConverter.sol",
+            "highlight": [
+                {
+                    "start": 48,
+                    "end": 68
+                }
+            ],
+            "title": "",
+            "id": "6751"
+        },
+        {
+            "type": "highlight",
+            "description": "`underlyingTokenToUSD()` lets the adapter express arbitrary underlying-token balances in 6-decimal USD.\nIt divides by `10^(tokenDecimals – 6)`, shifting whatever decimal layout the vault’s token uses down to `USDC`’s 6-decimal standard.",
+            "file": "src/adapters/ETHUSDConverter.sol",
+            "highlight": [
+                {
+                    "start": 75,
+                    "end": 77
+                }
+            ],
+            "title": "",
+            "id": "6752"
+        },
+        {
+            "type": "highlight",
+            "description": "`ETHUSDPriceFeedAdapter` fulfils a simple on-chain API defined by `IPriceFeedAdapter` (lines 8-24). Consumers can ask it to convert between USD, ETH and vault-underlying amounts.",
+            "file": "src/adapters/ETHUSDPriceFeedAdapter.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 24
+                }
+            ],
+            "title": "",
+            "id": "6753"
+        },
+        {
+            "type": "highlight",
+            "description": "The adapter stores three immutable parameters:\n- `priceFeed` – Chainlink ETH/USD aggregator address.\n- `updateTimeInSeconds` – acceptable staleness window reused in every conversion.\n- `underlyingTokenDecimals` – decimals of the vault’s underlying **ERC-20**.",
+            "file": "src/adapters/ETHUSDPriceFeedAdapter.sol",
+            "highlight": [
+                {
+                    "start": 27,
+                    "end": 31
+                }
+            ],
+            "title": "",
+            "id": "6754"
+        },
+        {
+            "type": "highlight",
+            "description": "`Constructor` wires those immutables at deployment time.",
+            "file": "src/adapters/ETHUSDPriceFeedAdapter.sol",
+            "highlight": [
+                {
+                    "start": 32,
+                    "end": 41
+                }
+            ],
+            "title": "",
+            "id": "6755"
+        },
+        {
+            "type": "highlight",
+            "description": "Each external function is a thin wrapper that delegates to the library, passing along the stored parameters:\n- `usdToETH()` → `ETHUSDConverter.usdToETH`\n- `ethToUSD()` → `ETHUSDConverter.ethToUSD`\n- `underlyingTokenToUSD()` → `ETHUSDConverter.underlyingTokenToUSD`\nThis keeps on-chain state minimal while centralising the math in the reusable library.",
+            "file": "src/adapters/ETHUSDPriceFeedAdapter.sol",
+            "highlight": [
+                {
+                    "start": 43,
+                    "end": 56
+                }
+            ],
+            "title": "",
+            "id": "6756"
+        },
+        {
+            "type": "textOnly",
+            "description": "Together, `ETHUSDConverter` encodes the precise arithmetic and safety checks, while `ETHUSDPriceFeedAdapter` exposes those conversions as an easy-to-call contract bound to a specific `Chainlink` feed and underlying token context.",
+            "title": "",
+            "id": "6757"
+        }
+    ]
+}

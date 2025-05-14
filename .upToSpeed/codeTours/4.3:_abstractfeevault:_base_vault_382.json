@@ -1,0 +1,124 @@
+{
+    "title": "4.3: AbstractFeeVault: Base Vault",
+    "id": "qVuwvJjrq8u7ymKv3T168bGC6Eu3gs6ctMX5tS69R0Y=",
+    "originalId": 382,
+    "position": 17,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "We will walk through the abstract `fee-vault base class` that every concrete vault inherits from. Our focus: shared state, authorization rules, simple validations, and the abstract entry-points a real vault must implement.",
+            "title": "",
+            "id": "6709"
+        },
+        {
+            "type": "highlight",
+            "description": "The contract inherits from the IFeeVault interface and from OpenZeppelin’s Ownable.  This provides a common external API and the standard owner pattern that is reused by every vault.",
+            "file": "src/adapters/AbstractFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 4,
+                    "end": 13
+                }
+            ],
+            "title": "",
+            "id": "6710"
+        },
+        {
+            "type": "highlight",
+            "description": "Shared state held by all vaults:\n- an immutable ERC-20 token address (line 13)\n- a mapping that flags which addresses are authorised to withdraw (line 22)",
+            "file": "src/adapters/AbstractFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 13,
+                    "end": 22
+                }
+            ],
+            "title": "",
+            "id": "6711"
+        },
+        {
+            "type": "highlight",
+            "description": "Custom errors emitted by the common validation helpers and the modifier.",
+            "file": "src/adapters/AbstractFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 15,
+                    "end": 19
+                }
+            ],
+            "title": "",
+            "id": "6712"
+        },
+        {
+            "type": "highlight",
+            "description": "onlyAuthorized is placed in front of sensitive functions (e.g. withdraw in concrete vaults).  Any caller not contained in the authorised mapping reverts with Unauthorized.",
+            "file": "src/adapters/AbstractFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 29,
+                    "end": 35
+                }
+            ],
+            "title": "",
+            "id": "6713"
+        },
+        {
+            "type": "highlight",
+            "description": "Constructor logic shared by every vault implementation:\n1. guard against zero addresses (lines 44-45)\n2. set the immutable token address (line 46)\n3. pre-authorise both the alchemist contract and the owner (lines 47-48)\n4. emit the matching event (line 49)",
+            "file": "src/adapters/AbstractFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 37,
+                    "end": 50
+                }
+            ],
+            "title": "",
+            "id": "6714"
+        },
+        {
+            "type": "highlight",
+            "description": "Owners can extend or revoke access through setAuthorization, which keeps the mapping in sync and emits an event visible to indexers.",
+            "file": "src/adapters/AbstractFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 52,
+                    "end": 61
+                }
+            ],
+            "title": "",
+            "id": "6715"
+        },
+        {
+            "type": "highlight",
+            "description": "Two small internal helpers standardise validation across all children: _checkNonZeroAddress and _checkNonZeroAmount.",
+            "file": "src/adapters/AbstractFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 64,
+                    "end": 77
+                }
+            ],
+            "title": "",
+            "id": "6716"
+        },
+        {
+            "type": "highlight",
+            "description": "Abstract entry-points.  Any concrete vault (ETH vault, ERC-20 vault, …) must supply logic for withdraw and totalDeposits while still respecting the common modifier and validations.",
+            "file": "src/adapters/AbstractFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 79,
+                    "end": 90
+                }
+            ],
+            "title": "",
+            "id": "6717"
+        },
+        {
+            "type": "textOnly",
+            "description": "In summary, `AbstractFeeVault` packs the cross-cutting concerns—**authorization**, **safety checks**, and **token reference**—into one place so every vault implementation can concentrate solely on its asset-specific accounting.",
+            "title": "",
+            "id": "6718"
+        }
+    ]
+}

@@ -1,0 +1,137 @@
+{
+    "title": "2.2: ERC20 Standard Interfaces",
+    "id": "jyXhEzPa6MuUwpMbyKqinyKgH5phVC8ean9s7V/PFQg=",
+    "originalId": 368,
+    "position": 3,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "We will trace the ERC-20 interfaces that Alchemix keeps in `src/interfaces/`.\nStarting from the absolute minimum API (`IERC20Minimal`) we will layer on:\n- A pure-view metadata extension.\n- Minting capability.\n- Burning capability.\nAlong the way you will see exactly which functions/events each interface contributes and how the successive files inherit from OpenZeppelin’s canonical `IERC20`.",
+            "title": "",
+            "id": "6577"
+        },
+        {
+            "type": "highlight",
+            "description": "`IERC20Minimal` begins with the two canonical ERC-20 events.  They enable off-chain indexers and on-chain logic to react to balance changes and allowance updates.",
+            "file": "src/interfaces/IERC20Minimal.sol",
+            "highlight": [
+                {
+                    "start": 6,
+                    "end": 13
+                }
+            ],
+            "title": "",
+            "id": "6578"
+        },
+        {
+            "type": "highlight",
+            "description": "Lines 20-48 expose the four absolute-core read & write methods:\n1. `totalSupply()` – global supply tracker.\n2. `balanceOf(account)` – per-holder balance.\n3. `transfer(recipient, amount)` – direct move of tokens.\n4. `approve(spender, amount)` – grant spending allowance.",
+            "file": "src/interfaces/IERC20Minimal.sol",
+            "highlight": [
+                {
+                    "start": 20,
+                    "end": 48
+                }
+            ],
+            "title": "",
+            "id": "6579"
+        },
+        {
+            "type": "highlight",
+            "description": "`transferFrom(owner, recipient, amount)` finalises the minimal set.  With an approval in place it allows a 3rd party (typically a contract) to move funds on the owner’s behalf.",
+            "file": "src/interfaces/IERC20Minimal.sol",
+            "highlight": [
+                {
+                    "start": 60,
+                    "end": 70
+                }
+            ],
+            "title": "",
+            "id": "6580"
+        },
+        {
+            "type": "highlight",
+            "description": "`IERC20Metadata` is a *pure view* extension ‑ it adds no state-changing behaviour, only human-readable helpers:\n- `name()` – full token name.\n- `symbol()` – ticker symbol.\n- `decimals()` – UI-friendly decimal places.\nEverything else is inherited from whichever ERC-20 base the concrete token implements.",
+            "file": "src/interfaces/IERC20Metadata.sol",
+            "highlight": [
+                {
+                    "start": 5,
+                    "end": 19
+                }
+            ],
+            "title": "",
+            "id": "6581"
+        },
+        {
+            "type": "highlight",
+            "description": "`IERC20Mintable` explicitly imports OpenZeppelin’s `IERC20` (not the local minimal version) and then exposes **one** new mutator:",
+            "file": "src/interfaces/IERC20Mintable.sol",
+            "highlight": [
+                {
+                    "start": 1,
+                    "end": 8
+                }
+            ],
+            "title": "",
+            "id": "6582"
+        },
+        {
+            "type": "highlight",
+            "description": "`mint(recipient, amount)` – unrestricted token creation for implementers that need inflation (e.g. staking rewards, synthetic debt).  All standard ERC-20 reads/writes are inherited unchanged from OZ.",
+            "file": "src/interfaces/IERC20Mintable.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 13
+                }
+            ],
+            "title": "",
+            "id": "6583"
+        },
+        {
+            "type": "highlight",
+            "description": "`IERC20Burnable` follows the same pattern – import OpenZeppelin and layer burn functionality.",
+            "file": "src/interfaces/IERC20Burnable.sol",
+            "highlight": [
+                {
+                    "start": 1,
+                    "end": 9
+                }
+            ],
+            "title": "",
+            "id": "6584"
+        },
+        {
+            "type": "highlight",
+            "description": "Two overloads are provided:\n- `burn(amount)` – holder destroys their own tokens.\n- `burnFrom(owner, amount)` – authorised caller burns from another holder, consuming allowance.  This mirrors the approval/transferFrom symmetry seen in the base standard.",
+            "file": "src/interfaces/IERC20Burnable.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 21
+                }
+            ],
+            "title": "",
+            "id": "6585"
+        },
+        {
+            "type": "highlight",
+            "description": "Both `Mintable` and `Burnable` reference `../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol`. This shows they are *thin* wrappers: all core ERC-20 behaviour is expected to come from the well-audited `OpenZeppelin` implementation; the Alchemix files merely declare additional hooks.",
+            "file": "src/interfaces/IERC20Mintable.sol",
+            "highlight": [
+                {
+                    "start": 1,
+                    "end": 4
+                }
+            ],
+            "title": "",
+            "id": "6586"
+        },
+        {
+            "type": "textOnly",
+            "description": "Recap\n- `IERC20Minimal` – events + 4 essential functions.\n- `IERC20Metadata` – read-only `name`, `symbol`, `decimals`.\n- `IERC20Mintable` – adds `mint`, inherits entire `OZ` `IERC20`.\n- `IERC20Burnable` – adds `burn` & `burnFrom`, also inherits `OZ` `IERC20`.\nThis layered approach lets each contract in the system select only the capabilities it needs while still conforming to the broader ERC-20 ecosystem.",
+            "title": "",
+            "id": "6587"
+        }
+    ]
+}

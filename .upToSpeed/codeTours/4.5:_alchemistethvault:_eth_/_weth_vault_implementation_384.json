@@ -1,0 +1,137 @@
+{
+    "title": "4.5: AlchemistETHVault: ETH / WETH Vault Implementation",
+    "id": "fpmXZcu89uhLMqsJsIIuX8nLIfV4NzlE0kFVZqVh69o=",
+    "originalId": 384,
+    "position": 19,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "We start with the dedicated `ETH vault`. It specialises in handling both native `ETH` and its wrapped `ERC-20` form (`WETH`) while inheriting the generic fee-tracking logic that every `Alchemist vault` shares.",
+            "title": "",
+            "id": "6732"
+        },
+        {
+            "type": "highlight",
+            "description": "The contract declaration extends two parents:  - AbstractFeeVault – gives events, authorisation and generic bookkeeping.  - ReentrancyGuard – protects external state-changing functions.\n\nLine 16 clearly lists both parents.",
+            "file": "src/AlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 11,
+                    "end": 18
+                }
+            ],
+            "title": "",
+            "id": "6733"
+        },
+        {
+            "type": "highlight",
+            "description": "The constructor forwards three addresses straight into the AbstractFeeVault constructor:  1. `_weth` (token address stored as `token` in the base)  2. `_alchemist` (gets `authorized` rights)  3. `_owner` (Ownable owner)  No additional state is introduced.",
+            "file": "src/AlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 22,
+                    "end": 28
+                }
+            ],
+            "title": "",
+            "id": "6734"
+        },
+        {
+            "type": "highlight",
+            "description": "`totalDeposits()` overrides the abstract definition and simply returns this contract’s ETH balance.  Because every incoming deposit is ultimately converted into native ETH, this single value tracks both ETH and unwrapped WETH deposits.",
+            "file": "src/AlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 30,
+                    "end": 35
+                }
+            ],
+            "title": "",
+            "id": "6735"
+        },
+        {
+            "type": "highlight",
+            "description": "`deposit()` is a payable endpoint for raw ETH:\n- Reentrancy protected.\n- Zero-amount guard (reverts with `ZeroAmount`).\n- Passes control to the internal `_deposit` helper which emits the `Deposited` event.",
+            "file": "src/AlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 38,
+                    "end": 44
+                }
+            ],
+            "title": "",
+            "id": "6736"
+        },
+        {
+            "type": "highlight",
+            "description": "The `receive()` function makes the vault compatible with plain `transfer` / `send` calls, crediting balance directly.  No bookkeeping is needed because `totalDeposits()` reads the balance on demand.",
+            "file": "src/AlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 45,
+                    "end": 48
+                }
+            ],
+            "title": "",
+            "id": "6737"
+        },
+        {
+            "type": "highlight",
+            "description": "`depositWETH(uint256 amount)` lets users send wrapped ETH and have it unwrapped on the fly:\n1. Guard against zero.\n2. `safeTransferFrom` pulls WETH into the vault using the ERC-20 interface stored in `token`.\n3. `IWETH(token).withdraw(amount)` converts it to native ETH.\n4. Finally `_deposit(msg.sender, amount)` records the deposit exactly like direct ETH.",
+            "file": "src/AlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 50,
+                    "end": 65
+                }
+            ],
+            "title": "",
+            "id": "6738"
+        },
+        {
+            "type": "highlight",
+            "description": "`_deposit(address depositor, uint256 amount)` is a very small helper – it only fires the `Deposited` event defined in the base class so off-chain systems can track inflows.",
+            "file": "src/AlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 67,
+                    "end": 74
+                }
+            ],
+            "title": "",
+            "id": "6739"
+        },
+        {
+            "type": "highlight",
+            "description": "`withdraw(address recipient, uint256 amount)` completes the lifecycle:\n- `onlyAuthorized` (from `AbstractFeeVault`) restricts access to the owner and the `Alchemist` core.\n- `nonReentrant` secures the call.\n- It validates non-zero amount and sufficient balance, then sends native ETH with a low-level `call{value: amount}(\"\")`.\n- Failure bubbles as `TransferFailed` and success emits `Withdrawn`.",
+            "file": "src/AlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 76,
+                    "end": 92
+                }
+            ],
+            "title": "",
+            "id": "6740"
+        },
+        {
+            "type": "highlight",
+            "description": "These are the shared events used by the ETH vault.  All vaults emit `Deposited` and `Withdrawn`, so indexers can treat them uniformly.",
+            "file": "src/adapters/AbstractFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 21,
+                    "end": 28
+                }
+            ],
+            "title": "",
+            "id": "6741"
+        },
+        {
+            "type": "textOnly",
+            "description": "Putting it all together:\n- Users can deposit either native `ETH` (`deposit()` or raw transfer) or `WETH` (`depositWETH`) – in the latter case the vault unwraps the tokens immediately.\n- All deposits end up as native `ETH`, so `totalDeposits()` is simply the contract balance.\n- Only authorised callers (the core **Alchemist** and the owner) may initiate `withdraw`, guaranteeing controlled outflows.\n\nThe design therefore provides a single, `ETH`-denominated liquidity pool that transparently accepts both `ETH` and `WETH` while always paying withdrawals in native `ETH`.",
+            "title": "",
+            "id": "6742"
+        }
+    ]
+}

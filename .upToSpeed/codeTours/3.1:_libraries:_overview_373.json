@@ -1,0 +1,118 @@
+{
+    "title": "3.1: Libraries: Overview",
+    "id": "7JTinuFSUb7xLjs9qUqCZXzUs8uGAnht3bCC0Hqkp+8=",
+    "originalId": 373,
+    "position": 8,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "The `libraries` folder groups together the project’s core helper libraries.\n- `src/libraries/FixedPointMath.sol`\n- `src/libraries/SafeCast.sol`\n- `src/libraries/SafeERC20.sol`\n- `src/libraries/TokenUtils.sol`\n- `src/libraries/Sets.sol`\n- `src/libraries/NFTMetadataGenerator.sol`\n- `src/libraries/StakingGraph.sol`\n- `src/libraries/PositionDecay.sol`",
+            "title": "",
+            "id": "6618"
+        },
+        {
+            "type": "highlight",
+            "description": "Fixed-precision decimals are represented with 18 decimals of precision.\nLine 11 stores the DECIMALS constant.\nLine 12 pre-computes ONE = 10**DECIMALS so that multiplication/division can stay in integer space.\nLines 17-19 wrap the raw uint256 in a lightweight Number struct that is passed around by the rest of the math helpers.",
+            "file": "src/libraries/FixedPointMath.sol",
+            "highlight": [
+                {
+                    "start": 7,
+                    "end": 19
+                }
+            ],
+            "title": "",
+            "id": "6619"
+        },
+        {
+            "type": "highlight",
+            "description": "SafeCast defends against overflow/underflow when converting between integer sizes and signs.\n- toInt256 (12-17) reverts if the uint256 is too large for a signed 256-bit integer.\n- toUint256 (22-27) forbids casting negative numbers to unsigned.\n- uint256ToUint128 (32-37) makes sure the larger value fits into 128 bits.\n- uint128ToUint256 (42-45) is a safe widening conversion.",
+            "file": "src/libraries/SafeCast.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 45
+                }
+            ],
+            "title": "",
+            "id": "6620"
+        },
+        {
+            "type": "highlight",
+            "description": "SafeERC20 wraps raw low-level calls so that silent ERC-20 failures revert with a rich error.\nLine 19 defines the shared ERC20CallFailed error carrying (target,success,data).\nLines 39-52 – safeTransfer\nLines 63-69 – safeApprove\nLines 80-86 – safeTransferFrom\nAll three functions bubble up any false return value or malformed/no return data.",
+            "file": "src/libraries/SafeERC20.sol",
+            "highlight": [
+                {
+                    "start": 10,
+                    "end": 86
+                }
+            ],
+            "title": "",
+            "id": "6621"
+        },
+        {
+            "type": "highlight",
+            "description": "TokenUtils exposes the same ERC20CallFailed error (17) and then a complete suite of helper functions that cover balance queries and supply-changing operations in addition to the transfer helpers.\n- expectDecimals         26-34\n- safeBalanceOf          44-52\n- safeTransfer           61-67\n- safeApprove            76-82\n- safeTransferFrom       92-97\n- safeMint              107-113\n- safeBurn              121-126\n- safeBurnFrom          136-141\nEach helper performs the call and checks both code size and return data before allowing execution to proceed.",
+            "file": "src/libraries/TokenUtils.sol",
+            "highlight": [
+                {
+                    "start": 10,
+                    "end": 142
+                }
+            ],
+            "title": "",
+            "id": "6622"
+        },
+        {
+            "type": "highlight",
+            "description": "`AddressSet` is an on-chain set implemented with `O(1)` lookup.\n- `values` – dynamic array holding the unique addresses (line 10)\n- `indexes` – mapping address→index+1 so that index 0 flags \"not present\" (line 11).",
+            "file": "src/libraries/Sets.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 12
+                }
+            ],
+            "title": "",
+            "id": "6623"
+        },
+        {
+            "type": "highlight",
+            "description": "`NFTMetadataGenerator` builds fully on-chain metadata strings.\n- `generateSVG` (19-44) assembles a small SVG with colors, title and token id.\n- `generateJSONString` (53-66) base64-encodes the SVG and packs it into a JSON object.\n- `generateTokenURI` (74-77) prefixes the JSON with a `data:application/json;base64` URI header so that it can be returned from tokenURI().",
+            "file": "src/libraries/NFTMetadataGenerator.sol",
+            "highlight": [
+                {
+                    "start": 18,
+                    "end": 78
+                }
+            ],
+            "title": "",
+            "id": "6624"
+        },
+        {
+            "type": "highlight",
+            "description": "StakingGraph packs two Fenwick trees into one storage array for block-granular stake accounting.\n- `Graph` struct (35-40) stores current tree size and the packed `uint256` array `g[]`.\n- `addStake` (50-98) updates the double-tree by inserting +`delta` at `start` and -`delta` at `expiration`, expanding the tree capacity when necessary.\n- `queryStake` (108-124) returns the net amount that has vested between two blocks by querying prefix sums at `start-1` and `end` and combining them.",
+            "file": "src/libraries/StakingGraph.sol",
+            "highlight": [
+                {
+                    "start": 35,
+                    "end": 124
+                }
+            ],
+            "title": "",
+            "id": "6625"
+        },
+        {
+            "type": "highlight",
+            "description": "`PositionDecay` transforms multiplicative decay into additive log-space to preserve precision.\n- `WeightIncrement` (39-57) computes `−log₂((total-increment)/total)` expressed as a `UQ136.120` fixed-point value.\n- `ScaleByWeightDelta` (67-83) applies a previously computed `weightDelta` to `value`, effectively calculating `value – value·2^(−weightDelta)` to determine the decayed portion.",
+            "file": "src/libraries/PositionDecay.sol",
+            "highlight": [
+                {
+                    "start": 39,
+                    "end": 84
+                }
+            ],
+            "title": "",
+            "id": "6626"
+        }
+    ]
+}

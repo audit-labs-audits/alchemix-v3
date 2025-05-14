@@ -1,0 +1,189 @@
+{
+    "title": "7.2: Alchemist V3 Core: Interfaces",
+    "id": "bqXUiIbDtk9V8WOdzLAvyCDA5UL3rOmTU6Fyg0XQ7so=",
+    "originalId": 393,
+    "position": 28,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "This walkthrough looks only at the `Solidity interfaces`. Everything you see here represents the **public API** that an external caller (`EOA` or `contract`) can invoke.",
+            "title": "",
+            "id": "6862"
+        },
+        {
+            "type": "highlight",
+            "description": "Collateral flow – entry.  deposit() transfers yield tokens from the caller into the protocol, credits the chosen position ( recipientId==0 mints a fresh NFT) and returns the debt-denominated value of what was deposited.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 85,
+                    "end": 111
+                }
+            ],
+            "title": "",
+            "id": "6863"
+        },
+        {
+            "type": "highlight",
+            "description": "Collateral flow – exit.  withdraw() burns freeCollateral from the position and sends the requested yield tokens to the supplied recipient, provided the action keeps the position above the LTV guard-rail.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 112,
+                    "end": 134
+                }
+            ],
+            "title": "",
+            "id": "6864"
+        },
+        {
+            "type": "highlight",
+            "description": "Debt flow – issuance.  mint() draws newly-created debt tokens (alTokens) against the position’s collateral and transfers them to the recipient.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 136,
+                    "end": 153
+                }
+            ],
+            "title": "",
+            "id": "6865"
+        },
+        {
+            "type": "highlight",
+            "description": "Debt flow – burning via alTokens.  burn() destroys a user-supplied amount of alTokens and credits the specified position, reducing its debt balance.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 174,
+                    "end": 195
+                }
+            ],
+            "title": "",
+            "id": "6866"
+        },
+        {
+            "type": "highlight",
+            "description": "Debt flow – repaying with collateral tokens.  repay() lets the caller hand in yield tokens instead of alTokens; the tokens are forwarded to the Transmuter and an equivalent debt amount is cancelled on the target position.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 196,
+                    "end": 215
+                }
+            ],
+            "title": "",
+            "id": "6867"
+        },
+        {
+            "type": "highlight",
+            "description": "Safety valve.  liquidate() can be called by anyone; if a position’s collateral ratio is below the required threshold it is partially or fully closed, seizing collateral and rewarding the liquidator.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 218,
+                    "end": 236
+                }
+            ],
+            "title": "",
+            "id": "6868"
+        },
+        {
+            "type": "highlight",
+            "description": "Monitoring ‑ system wide.  `totalDebt()` (line 601) exposes the sum of all outstanding debt tokens, while `totalSyntheticsIssued()` (line 603) shows how many have actually been minted.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 601,
+                    "end": 610
+                }
+            ],
+            "title": "",
+            "id": "6869"
+        },
+        {
+            "type": "highlight",
+            "description": "Monitoring ‑ position level.  `getCDP()`, `totalValue()` and `getMaxBorrowable()` allow front-ends to display collateral, debt and remaining borrowing power.  `freeCollateral` is not its own view but is maintained internally (see `Account` struct line 44) and is used when `getMaxBorrowable()` is computed.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 716,
+                    "end": 743
+                }
+            ],
+            "title": "",
+            "id": "6870"
+        },
+        {
+            "type": "highlight",
+            "description": "**Admin controls** – selecting price sources.  `setTokenAdapter()` lets the admin replace the `oracle/adapter` that prices the yield token.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 318,
+                    "end": 324
+                }
+            ],
+            "title": "",
+            "id": "6871"
+        },
+        {
+            "type": "highlight",
+            "description": "**Admin controls – revenue routing.**  `setTransmuter()` updates the address that receives yield-token flows (redemptions, repayments, liquidations).",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 362,
+                    "end": 369
+                }
+            ],
+            "title": "",
+            "id": "6872"
+        },
+        {
+            "type": "highlight",
+            "description": "Admin controls – fee vault.  `setAlchemistFeeVault()` points the protocol to a `FeeVault` that holds underlying tokens for liquidator bonuses.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 407,
+                    "end": 414
+                }
+            ],
+            "title": "",
+            "id": "6873"
+        },
+        {
+            "type": "highlight",
+            "description": "**Initialization.**  The `initialize()` function wires up every immutable parameter – tokens, caps, collateralisation parameters, adapters and fee recipients – establishing a clean genesis state.",
+            "file": "src/AlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 153,
+                    "end": 176
+                }
+            ],
+            "title": "",
+            "id": "6874"
+        },
+        {
+            "type": "highlight",
+            "description": "Position NFT API. Only the `AlchemistV3` contract is expected to call `mint()` and `burn()`; end-users touch these indirectly when opening or fully closing positions.",
+            "file": "src/interfaces/IAlchemistV3Position.sol",
+            "highlight": [
+                {
+                    "start": 10,
+                    "end": 23
+                }
+            ],
+            "title": "",
+            "id": "6875"
+        },
+        {
+            "type": "textOnly",
+            "description": "After this tour you now have the definitive list of callable functions:\n- collateral lifecycle: `deposit()`, `withdraw()`\n- debt lifecycle: `mint()`/`mintFrom()`, `burn()`, `repay()`\n- safety: `liquidate()`/`batchLiquidate()`\n- read-only monitors: `totalDebt()`, `totalSyntheticsIssued()`, `getCDP()`, `totalValue()`, `getMaxBorrowable()`, etc.\n- admin knobs: `setTransmuter()`, `setTokenAdapter()`, `setAlchemistFeeVault()`, plus other ratio & pause setters.\n- position NFT hooks: `mint()`, `burn()` – callable only by `AlchemistV3`.",
+            "title": "",
+            "id": "6876"
+        }
+    ]
+}

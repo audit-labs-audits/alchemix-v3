@@ -1,0 +1,116 @@
+{
+    "title": "3.7: PositionDecay: Earmark Weight Computation",
+    "id": "tnNqu8Y4W1bf1zIKau/Ytg2bcXII8PgI9FeB/21ycRs=",
+    "originalId": 379,
+    "position": 14,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "We will tour the `PositionDecay` library and then see how `AlchemistV3` relies on it to slowly **decay** per-account and global accounting values.",
+            "title": "",
+            "id": "6687"
+        },
+        {
+            "type": "highlight",
+            "description": "WeightIncrement(increment,total) returns the UQ136.120 fixed-point value –log2((total-increment)/total).\n- line 41–44: validates arguments so 0 ≤ increment ≤ total ≤ 2¹²⁸-1.\n- line 45–48: shortcut –log2(1)=0 when nothing changed.\n- line 50: builds the fractional ratio (total-increment)/total in UQ128.128 by left-shifting 128 bits and dividing.\n- line 51–54: if the ratio rounds to 0 the smallest non-zero weight is returned.\n- line 55: otherwise the heavy-lifting is delegated to the internal Log2NegFrac(ratio).",
+            "file": "src/libraries/PositionDecay.sol",
+            "highlight": [
+                {
+                    "start": 39,
+                    "end": 57
+                }
+            ],
+            "title": "",
+            "id": "6688"
+        },
+        {
+            "type": "textOnly",
+            "description": "The caller therefore receives an always-non-negative number that grows as the fraction removed from `total` grows.\nA full removal (`increment==total`) yields ≈`128<<120`, the maximum representable 128.0 in `UQ136.120`.",
+            "title": "",
+            "id": "6689"
+        },
+        {
+            "type": "highlight",
+            "description": "ScaleByWeightDelta(value,weightDelta) applies an exponential decay to “value”.\n- line 69: value must fit into 128 bits because it will later be multiplied by an UQ128.128 number.\n- line 71–74: a zero weightDelta means nothing decays ⇒ 0 is returned (no change).\n- line 82: computes value – value·2^(–weightDelta).\n  Exp2NegFrac(weightDelta) produces 2^(–weightDelta) in UQ128.128; the result is multiplied by the original value and right-shifted 128 bits to restore the original scaling.",
+            "file": "src/libraries/PositionDecay.sol",
+            "highlight": [
+                {
+                    "start": 67,
+                    "end": 83
+                }
+            ],
+            "title": "",
+            "id": "6690"
+        },
+        {
+            "type": "textOnly",
+            "description": "Hence the returned amount is exactly what was lost due to the decay represented by `weightDelta`.",
+            "title": "",
+            "id": "6691"
+        },
+        {
+            "type": "highlight",
+            "description": "Log2NegFrac(x) – core helper that computes –log2(x) for 0<x<1 (x is UQ128.128)\nSteps:\n1. line 95–98: reject x≥1 and x==0.\n2. line 99–107: find the most-significant-bit of x by successive shifts, producing msb.\n3. line 109–116: start with an initial fixed-point result of (msb−128)<<120, then perform 128 iterations (one per fractional bit) squaring ux, extracting its top bit, updating ux and adding that bit·2^(n) to the result.\n4. line 118: returns –result (negating because we track –log2).\nThe procedure is identical to the algorithm used by ABDKMath64x64 but widened to 136.120 precision.",
+            "file": "src/libraries/PositionDecay.sol",
+            "highlight": [
+                {
+                    "start": 93,
+                    "end": 118
+                }
+            ],
+            "title": "",
+            "id": "6692"
+        },
+        {
+            "type": "highlight",
+            "description": "`Exp2NegFrac(x)` – reconstructs 2^(–x) where `x` is the weight produced above.\n- line 130: if `x` is larger than the maximum representable weight, underflow → returns 0.\n- line 132–135: cast to signed and verify it is strictly negative.\n- line 139–141: start the product with `0x8…051` (≈1 in `UQ128.128` plus a bias of `0x51` for rounding).\nSubsequent lines (143–382, not shown in full) repeatedly multiply the running result with pre-computed 2^(`k`) constants whenever bit `k` of the exponent is set.\n- line 385–387: finally right-shift by `1+⌊x/2¹²⁰⌋` to account for the integral part and assert the outcome fits in `128.128`.",
+            "file": "src/libraries/PositionDecay.sol",
+            "highlight": [
+                {
+                    "start": 128,
+                    "end": 142
+                }
+            ],
+            "title": "",
+            "id": "6693"
+        },
+        {
+            "type": "textOnly",
+            "description": "Together, `Log2NegFrac` and `Exp2NegFrac` form an efficient fixed-point log/exp pair that let the library accumulate many fractional multipliers without ever multiplying large numbers directly.",
+            "title": "",
+            "id": "6694"
+        },
+        {
+            "type": "highlight",
+            "description": "Global earmarking flow (`_earmark`)\n1. If `totalDebt==0` nothing to do.\n2. For blocks after `lastEarmarkBlock` it queries the transmuter for new `amount` of debt to earmark.\n3. ```\nline 1013\u00131014: _earmarkWeight += PositionDecay.WeightIncrement(amount, totalDebt - cumulativeEarmarked);\n```\n   The weight captures `-log2( (unearmarkedDebt - amount) / unearmarkedDebt )`.\n4. `cumulativeEarmarked` is increased and `lastEarmarkBlock` is updated.",
+            "file": "src/AlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 1006,
+                    "end": 1018
+                }
+            ],
+            "title": "",
+            "id": "6695"
+        },
+        {
+            "type": "highlight",
+            "description": "**Per-account synchronization flow (`_sync`)**\n- line `978`: `debtToEarmark = PositionDecay.ScaleByWeightDelta(account.debt – account.earmarked, _earmarkWeight – account.lastAccruedEarmarkWeight);`\n  converts the global earmarkWeight delta since last sync into the concrete amount of this user’s debt that has now become earmarked.\n- line `987` / `988` and `993`: the same `ScaleByWeightDelta` call is repeated with `redemptionWeight` and `collateralWeight` to realise redemptions and collateral removals.\n- Finally the account’s stored weights are updated to the latest global values.",
+            "file": "src/AlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 974,
+                    "end": 999
+                }
+            ],
+            "title": "",
+            "id": "6696"
+        },
+        {
+            "type": "textOnly",
+            "description": "In summary:\n- `WeightIncrement` converts a fresh earmark or redemption amount into an additive weight so global state can be stored compactly and grow monotonically.\n- `ScaleByWeightDelta` lets each account translate the difference between the current global weight and the weight it last saw into concrete token amounts, realising decay lazily on demand.\nThis pairing enables O(1) global updates and O(1) per-account syncs regardless of the number of positions.",
+            "title": "",
+            "id": "6697"
+        }
+    ]
+}

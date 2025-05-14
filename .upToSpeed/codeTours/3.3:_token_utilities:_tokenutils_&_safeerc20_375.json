@@ -1,0 +1,202 @@
+{
+    "title": "3.3: Token Utilities: TokenUtils & SafeERC20",
+    "id": "fhGvBB5pcObo1mJjAiIaD/PEP2q8eQXuwfGZ57rAk2Y=",
+    "originalId": 375,
+    "position": 10,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "This tour contrasts two helper libraries – `TokenUtils` and `SafeERC20` – that wrap direct ERC-20 calls with additional safety checks.\n\nWe will start with `TokenUtils`, walk through its `read`, `transfer` and `mint/burn` helpers, then compare the lighter-weight `SafeERC20` version.",
+            "title": "",
+            "id": "6641"
+        },
+        {
+            "type": "highlight",
+            "description": "`ERC20CallFailed` is the sole revert reason used by TokenUtils.  - `target` – address the call was sent to.  - `success` – low-level call return flag.  - `data` – raw bytes returned (either revert data when `success==false` or malformed return when `success==true`).",
+            "file": "src/libraries/TokenUtils.sol",
+            "highlight": [
+                {
+                    "start": 10,
+                    "end": 17
+                }
+            ],
+            "title": "",
+            "id": "6642"
+        },
+        {
+            "type": "highlight",
+            "description": "`expectDecimals` performs a `staticcall` using `IERC20Metadata.decimals.selector`.\nIt reverts if:\n  - the address has no code (`token.code.length==0`),\n  - the low-level call failed, or\n  - fewer than 32 bytes were returned.\nOn success the bytes are ABI-decoded into a `uint8`.",
+            "file": "src/libraries/TokenUtils.sol",
+            "highlight": [
+                {
+                    "start": 25,
+                    "end": 34
+                }
+            ],
+            "title": "",
+            "id": "6643"
+        },
+        {
+            "type": "highlight",
+            "description": "`safeBalanceOf` mirrors the pattern for balances.  The `staticcall` passes `IERC20.balanceOf.selector` + `account` and enforces the same three safety predicates before decoding the `uint256` balance.",
+            "file": "src/libraries/TokenUtils.sol",
+            "highlight": [
+                {
+                    "start": 44,
+                    "end": 52
+                }
+            ],
+            "title": "",
+            "id": "6644"
+        },
+        {
+            "type": "highlight",
+            "description": "`safeTransfer` submits the encoded `IERC20.transfer` call.  After execution it:\n  - checks `token.code.length` again,\n  - requires the low-level call to succeed, and\n  - if the token returned data, decodes it as `bool` and requires `true`.",
+            "file": "src/libraries/TokenUtils.sol",
+            "highlight": [
+                {
+                    "start": 60,
+                    "end": 67
+                }
+            ],
+            "title": "",
+            "id": "6645"
+        },
+        {
+            "type": "highlight",
+            "description": "`safeApprove` follows the identical pattern for `approve`.",
+            "file": "src/libraries/TokenUtils.sol",
+            "highlight": [
+                {
+                    "start": 74,
+                    "end": 82
+                }
+            ],
+            "title": "",
+            "id": "6646"
+        },
+        {
+            "type": "highlight",
+            "description": "`safeTransferFrom` does the same for `transferFrom`, protecting allowance-based moves.",
+            "file": "src/libraries/TokenUtils.sol",
+            "highlight": [
+                {
+                    "start": 92,
+                    "end": 98
+                }
+            ],
+            "title": "",
+            "id": "6647"
+        },
+        {
+            "type": "highlight",
+            "description": "`safeMint` calls `IERC20Mintable.mint(selector)` – enabling trusted contracts to mint. Return decoding rules stay the same.",
+            "file": "src/libraries/TokenUtils.sol",
+            "highlight": [
+                {
+                    "start": 104,
+                    "end": 112
+                }
+            ],
+            "title": "",
+            "id": "6648"
+        },
+        {
+            "type": "highlight",
+            "description": "`safeBurn` routes through `IERC20Burnable.burn(selector)` to destroy the caller’s own tokens safely.",
+            "file": "src/libraries/TokenUtils.sol",
+            "highlight": [
+                {
+                    "start": 118,
+                    "end": 127
+                }
+            ],
+            "title": "",
+            "id": "6649"
+        },
+        {
+            "type": "highlight",
+            "description": "`safeBurnFrom` extends burning to another account when allowance permits, using `burnFrom`.",
+            "file": "src/libraries/TokenUtils.sol",
+            "highlight": [
+                {
+                    "start": 131,
+                    "end": 140
+                }
+            ],
+            "title": "",
+            "id": "6650"
+        },
+        {
+            "type": "highlight",
+            "description": "SafeERC20 defines an **independent** `ERC20CallFailed` error with the exact same three parameters.",
+            "file": "src/libraries/SafeERC20.sol",
+            "highlight": [
+                {
+                    "start": 12,
+                    "end": 19
+                }
+            ],
+            "title": "",
+            "id": "6651"
+        },
+        {
+            "type": "highlight",
+            "description": "`expectDecimals` is present here too, but note the implementation **omits the `token.code.length` check**, only validating `success` and `data.length`.",
+            "file": "src/libraries/SafeERC20.sol",
+            "highlight": [
+                {
+                    "start": 29,
+                    "end": 37
+                }
+            ],
+            "title": "",
+            "id": "6652"
+        },
+        {
+            "type": "highlight",
+            "description": "`safeTransfer` – same return-data unwrapping logic, again without `code.length` verification.",
+            "file": "src/libraries/SafeERC20.sol",
+            "highlight": [
+                {
+                    "start": 47,
+                    "end": 53
+                }
+            ],
+            "title": "",
+            "id": "6653"
+        },
+        {
+            "type": "highlight",
+            "description": "`safeApprove` – identical to `TokenUtils` aside from the missing code-length guard.",
+            "file": "src/libraries/SafeERC20.sol",
+            "highlight": [
+                {
+                    "start": 63,
+                    "end": 69
+                }
+            ],
+            "title": "",
+            "id": "6654"
+        },
+        {
+            "type": "highlight",
+            "description": "`safeTransferFrom` – parallel implementation.",
+            "file": "src/libraries/SafeERC20.sol",
+            "highlight": [
+                {
+                    "start": 80,
+                    "end": 85
+                }
+            ],
+            "title": "",
+            "id": "6655"
+        },
+        {
+            "type": "textOnly",
+            "description": "**Key take-aways:**\n- Both libraries standardise safe low-level ERC-20 interactions and surface a uniform `ERC20CallFailed` error.\n- `TokenUtils` adds:\n  – `safeBalanceOf` and metadata helper `expectDecimals` with an extra `code.length` guard.\n  – mint/burn helpers (`safeMint`, `safeBurn`, `safeBurnFrom`) wired to `IERC20Mintable`/`IERC20Burnable`.\n- `SafeERC20` is a slimmer variant focused only on transfers & approvals and does not perform the contract-code length sanity check.",
+            "title": "",
+            "id": "6656"
+        }
+    ]
+}

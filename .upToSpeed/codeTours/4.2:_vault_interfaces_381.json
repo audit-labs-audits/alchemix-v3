@@ -1,0 +1,149 @@
+{
+    "title": "4.2: Vault Interfaces",
+    "id": "6aE36hxXmktNft1gCSEpEXYx9+KMojIavpO8wLBm2Xo=",
+    "originalId": 381,
+    "position": 16,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "We start with the smallest building-block: every concrete vault in the repository declares that it **implements** `IFeeVault`. The interface only exposes three read/write methods that any fee-holding vault must respect.",
+            "title": "",
+            "id": "6719"
+        },
+        {
+            "type": "highlight",
+            "description": "Line 10 returns the ERC-20 that the vault manages, line 16 reports the amount that has accumulated, and line 23 defines the single, restricted way to move tokens out.",
+            "file": "src/interfaces/IFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 6,
+                    "end": 24
+                }
+            ],
+            "title": "",
+            "id": "6720"
+        },
+        {
+            "type": "textOnly",
+            "description": "`IAlchemistTokenVault` builds on `IFeeVault` for **ERC-20** fee revenue. Besides the common getters, it tracks who is allowed to withdraw, lets anyone deposit, and exposes admin hooks.",
+            "title": "",
+            "id": "6721"
+        },
+        {
+            "type": "highlight",
+            "description": "Same `token()` getter (line 15) and the additional `alchemist()` vault controller (line 21).",
+            "file": "src/interfaces/IAlchemistTokenVault.sol",
+            "highlight": [
+                {
+                    "start": 10,
+                    "end": 21
+                }
+            ],
+            "title": "",
+            "id": "6722"
+        },
+        {
+            "type": "highlight",
+            "description": "Line 28 exposes `authorizedWithdrawers(address)` and the public `deposit` (line 34) & `withdraw` (line 41) user flows.",
+            "file": "src/interfaces/IAlchemistTokenVault.sol",
+            "highlight": [
+                {
+                    "start": 23,
+                    "end": 41
+                }
+            ],
+            "title": "",
+            "id": "6723"
+        },
+        {
+            "type": "highlight",
+            "description": "Administrative setters: `setAuthorizedWithdrawer` (line 48) and `setAlchemist` (line 54).",
+            "file": "src/interfaces/IAlchemistTokenVault.sol",
+            "highlight": [
+                {
+                    "start": 44,
+                    "end": 55
+                }
+            ],
+            "title": "",
+            "id": "6724"
+        },
+        {
+            "type": "highlight",
+            "description": "Events signal every state-change: `Deposited`, `Withdrawn`, `AuthorizedWithdrawerSet`, and `AlchemistUpdated`.",
+            "file": "src/interfaces/IAlchemistTokenVault.sol",
+            "highlight": [
+                {
+                    "start": 56,
+                    "end": 75
+                }
+            ],
+            "title": "",
+            "id": "6725"
+        },
+        {
+            "type": "textOnly",
+            "description": "`IAlchemistETHVault` adapts the same pattern but for native ETH / `WETH`. Notice the `WETH` helper, ETH deposit convenience and identical admin surface.",
+            "title": "",
+            "id": "6726"
+        },
+        {
+            "type": "highlight",
+            "description": "Getter for the wrapped `ETH` `token()` (line 14) and a dedicated `depositWETH` entrypoint (line 20).",
+            "file": "src/interfaces/IAlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 10,
+                    "end": 20
+                }
+            ],
+            "title": "",
+            "id": "6727"
+        },
+        {
+            "type": "highlight",
+            "description": "The shared `withdraw` method (line 27) plus the admin `setAlchemist` (line 33).",
+            "file": "src/interfaces/IAlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 22,
+                    "end": 35
+                }
+            ],
+            "title": "",
+            "id": "6728"
+        },
+        {
+            "type": "highlight",
+            "description": "Read-only helpers: `balanceOf` (line 40), `weth()` (46), `alchemist()` (52), and `totalDeposits()` (58).",
+            "file": "src/interfaces/IAlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 35,
+                    "end": 58
+                }
+            ],
+            "title": "",
+            "id": "6729"
+        },
+        {
+            "type": "highlight",
+            "description": "Events mirror the `token vault` while naming the controller upgrade event `AlchemistV3Updated`.",
+            "file": "src/interfaces/IAlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 60,
+                    "end": 78
+                }
+            ],
+            "title": "",
+            "id": "6730"
+        },
+        {
+            "type": "textOnly",
+            "description": "Putting it together:\n-  All vaults must expose `token()`, `totalDeposits()` and permissioned `withdraw()` via `IFeeVault`.\n-  `IAlchemistTokenVault` adds **ERC-20** `deposit()` and fine-grained withdrawer control.\n-  `IAlchemistETHVault` introduces dual ETH/WETH deposit paths and equivalent admin hooks.\nConcrete contracts (`AlchemistTokenVault.sol`, `AlchemistETHVault.sol`) inherit these interfaces and rely on the common `AbstractFeeVault` base, enforcing the unified API while specialising the deposit logic.",
+            "title": "",
+            "id": "6731"
+        }
+    ]
+}

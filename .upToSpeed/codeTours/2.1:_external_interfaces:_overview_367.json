@@ -1,0 +1,310 @@
+{
+    "title": "2.1: External Interfaces: Overview",
+    "id": "43uK6og36i11V+2Bu5/0IjPPHyIZ+I3AL4Lnr76UPc0=",
+    "originalId": 367,
+    "position": 2,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "Welcome!  This guided tour introduces every Solidity file living in `src/interfaces` and sketches the **\"surface‐area\"** that **Alchemix V3** exposes to—or consumes from—other contracts.  You will:\n- see the full directory listing;\n- sort the interfaces into three conceptual buckets;\n- glance at each interface’s public API (`function`/`event` signatures only, no deep dives yet);\n- finish with a recap of how these definitions mark the boundary between **Alchemix** and the outside world.",
+            "title": "",
+            "id": "6550"
+        },
+        {
+            "type": "textOnly",
+            "description": "Directory contents:\n- `IAlchemicToken.sol`\n- `IAlchemistETHVault.sol`\n- `IAlchemistTokenVault.sol`\n- `IAlchemistV3.sol`\n- `IAlchemistV3Position.sol`\n- `IERC20Burnable.sol`\n- `IERC20Metadata.sol`\n- `IERC20Minimal.sol`\n- `IERC20Mintable.sol`\n- `IERC721Enumerable.sol`\n- `IFeeVault.sol`\n- `ITokenAdapter.sol`\n- `ITransmuter.sol`\n- `IWETH.sol`\n- `IWhitelist.sol`\n- `IYearnVaultV2.sol`\n- `IYieldToken.sol`\n- `test/ITestYieldToken.sol`",
+            "title": "",
+            "id": "6551"
+        },
+        {
+            "type": "textOnly",
+            "description": "High-level groupings:\n\nStandard Token Interfaces\n  – `IERC20Minimal.sol`, `IERC20Metadata.sol`, `IERC20Mintable.sol`, `IERC20Burnable.sol`, `IERC721Enumerable.sol`\n\nProtocol-Specific Interfaces\n  – `IAlchemicToken.sol`, `IAlchemistV3.sol`, `IAlchemistV3Position.sol`, `IAlchemistETHVault.sol`, `IAlchemistTokenVault.sol`, `IFeeVault.sol`, `IWhitelist.sol`, `ITransmuter.sol`\n\nYield / Wrapping & Vault Interfaces\n  – `IWETH.sol`, `IYieldToken.sol`, `IYearnVaultV2.sol`, `ITokenAdapter.sol`, `test/ITestYieldToken.sol`",
+            "title": "",
+            "id": "6552"
+        },
+        {
+            "type": "textOnly",
+            "description": "Let’s skim the `Standard Token` interfaces first.",
+            "title": "",
+            "id": "6553"
+        },
+        {
+            "type": "highlight",
+            "description": "IERC20Minimal exposes totalSupply, balanceOf, allowance, transfer, approve, transferFrom plus the Transfer and Approval events.",
+            "file": "src/interfaces/IERC20Minimal.sol",
+            "highlight": [
+                {
+                    "start": 20,
+                    "end": 70
+                }
+            ],
+            "title": "",
+            "id": "6554"
+        },
+        {
+            "type": "highlight",
+            "description": "IERC20Metadata extends ERC-20 with name, symbol and decimals getters.",
+            "file": "src/interfaces/IERC20Metadata.sol",
+            "highlight": [
+                {
+                    "start": 5,
+                    "end": 19
+                }
+            ],
+            "title": "",
+            "id": "6555"
+        },
+        {
+            "type": "highlight",
+            "description": "IERC20Mintable adds a single mint(recipient, amount) method.",
+            "file": "src/interfaces/IERC20Mintable.sol",
+            "highlight": [
+                {
+                    "start": 5,
+                    "end": 13
+                }
+            ],
+            "title": "",
+            "id": "6556"
+        },
+        {
+            "type": "highlight",
+            "description": "IERC20Burnable offers burn(amount) and burnFrom(owner, amount).",
+            "file": "src/interfaces/IERC20Burnable.sol",
+            "highlight": [
+                {
+                    "start": 5,
+                    "end": 22
+                }
+            ],
+            "title": "",
+            "id": "6557"
+        },
+        {
+            "type": "highlight",
+            "description": "IERC721Enumerable (OpenZeppelin) brings totalSupply and per-owner / global enumeration helpers.",
+            "file": "src/interfaces/IERC721Enumerable.sol",
+            "highlight": [
+                {
+                    "start": 12,
+                    "end": 28
+                }
+            ],
+            "title": "",
+            "id": "6558"
+        },
+        {
+            "type": "textOnly",
+            "description": "Next up: Alchemix-specific contracts and helpers.",
+            "title": "",
+            "id": "6559"
+        },
+        {
+            "type": "highlight",
+            "description": "`IAlchemicToken` extends `ERC-20` with mint accounting (`hasMinted`, `lowerHasMinted`) and admin controls for ceilings & whitelist.",
+            "file": "src/interfaces/IAlchemicToken.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 42
+                }
+            ],
+            "title": "",
+            "id": "6560"
+        },
+        {
+            "type": "highlight",
+            "description": "IAlchemistV3Actions – key user calls: approveMint, poke, deposit, withdraw, mint, mintFrom, burn, repay, liquidate, batchLiquidate, redeem, resetMintAllowances.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 71,
+                    "end": 110
+                }
+            ],
+            "title": "",
+            "id": "6561"
+        },
+        {
+            "type": "highlight",
+            "description": "`IAlchemistV3Events` publishes state changes such as `Deposit`, `Withdraw`, `Mint`, `Burn`, `Liquidated`, plus **admin/guardian updates**.",
+            "file": "src/interfaces/IAlchemistV3.sol",
+            "highlight": [
+                {
+                    "start": 417,
+                    "end": 470
+                }
+            ],
+            "title": "",
+            "id": "6562"
+        },
+        {
+            "type": "highlight",
+            "description": "`IAlchemistV3Position` is the **ERC-721** wrapper for user positions: `mint`, `burn`, `alchemist()` and enumeration functions.",
+            "file": "src/interfaces/IAlchemistV3Position.sol",
+            "highlight": [
+                {
+                    "start": 10,
+                    "end": 45
+                }
+            ],
+            "title": "",
+            "id": "6563"
+        },
+        {
+            "type": "highlight",
+            "description": "`IAlchemistETHVault` manages `WETH` liquidity – `depositWETH`, `withdraw`, `setAlchemist`, `balance` and `totals`.",
+            "file": "src/interfaces/IAlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 9,
+                    "end": 40
+                }
+            ],
+            "title": "",
+            "id": "6564"
+        },
+        {
+            "type": "highlight",
+            "description": "`IAlchemistTokenVault` is the **ERC-20** vault analogue with deposit, withdraw and authorised-withdrawer management.",
+            "file": "src/interfaces/IAlchemistTokenVault.sol",
+            "highlight": [
+                {
+                    "start": 10,
+                    "end": 54
+                }
+            ],
+            "title": "",
+            "id": "6565"
+        },
+        {
+            "type": "highlight",
+            "description": "IFeeVault is minimal: `token()`, `totalDeposits()`, `withdraw(recipient, amount)`.",
+            "file": "src/interfaces/IFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 5,
+                    "end": 24
+                }
+            ],
+            "title": "",
+            "id": "6566"
+        },
+        {
+            "type": "highlight",
+            "description": "`IWhitelist` – `add`, `remove`, `disable`, `isWhitelisted` plus corresponding events.",
+            "file": "src/interfaces/IWhitelist.sol",
+            "highlight": [
+                {
+                    "start": 5,
+                    "end": 50
+                }
+            ],
+            "title": "",
+            "id": "6567"
+        },
+        {
+            "type": "highlight",
+            "description": "ITransmuter key getters: `alchemist()`, `admin()`, `syntheticToken()`, `depositCap()`, `timeToTransmute`, `fees`, etc.",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 25,
+                    "end": 70
+                }
+            ],
+            "title": "",
+            "id": "6568"
+        },
+        {
+            "type": "highlight",
+            "description": "User actions on the Transmuter: `getPosition`, `createRedemption`, `claimRedemption`, `queryGraph`; more admin setters below.",
+            "file": "src/interfaces/ITransmuter.sol",
+            "highlight": [
+                {
+                    "start": 140,
+                    "end": 171
+                }
+            ],
+            "title": "",
+            "id": "6569"
+        },
+        {
+            "type": "textOnly",
+            "description": "Finally, external `yield` / `wrapping` & `vault interfaces`.",
+            "title": "",
+            "id": "6570"
+        },
+        {
+            "type": "highlight",
+            "description": "IWETH = `ERC-20` + `deposit()` and `withdraw(amount)`.",
+            "file": "src/interfaces/IWETH.sol",
+            "highlight": [
+                {
+                    "start": 10,
+                    "end": 20
+                }
+            ],
+            "title": "",
+            "id": "6571"
+        },
+        {
+            "type": "highlight",
+            "description": "`IYieldToken` provides a single `price()` view for generic yield tokens.",
+            "file": "src/interfaces/IYieldToken.sol",
+            "highlight": [
+                {
+                    "start": 1,
+                    "end": 5
+                }
+            ],
+            "title": "",
+            "id": "6572"
+        },
+        {
+            "type": "highlight",
+            "description": "`IYearnVaultV2` – rich vault API: `deposit/withdraw` variants, `strategies()`, `pricePerShare`, `totalAssets`, `creditAvailable`, etc.",
+            "file": "src/interfaces/IYearnVaultV2.sol",
+            "highlight": [
+                {
+                    "start": 6,
+                    "end": 55
+                }
+            ],
+            "title": "",
+            "id": "6573"
+        },
+        {
+            "type": "highlight",
+            "description": "`ITokenAdapter` is Alchemix’s abstraction around any yield token: `version()`, `token()`, `underlyingToken()`, `price()`.",
+            "file": "src/interfaces/ITokenAdapter.sol",
+            "highlight": [
+                {
+                    "start": 5,
+                    "end": 26
+                }
+            ],
+            "title": "",
+            "id": "6574"
+        },
+        {
+            "type": "highlight",
+            "description": "`ITestYieldToken` – test helper with `underlyingToken()`, `price()`, `mint`, `redeem`, `slurp` and `siphon`.",
+            "file": "src/interfaces/test/ITestYieldToken.sol",
+            "highlight": [
+                {
+                    "start": 7,
+                    "end": 32
+                }
+            ],
+            "title": "",
+            "id": "6575"
+        },
+        {
+            "type": "textOnly",
+            "description": "Recap:  Standard token wrappers guarantee **ERC compliance**; protocol-specific interfaces dictate how debt, vaults and redemptions work inside `Alchemix V3`; yield/vault interfaces let Alchemix interact safely with external wrappers like `WETH` or `Yearn`.  Everything external to core logic must obey these signatures—this set of interfaces is the **public contract of the system**.",
+            "title": "",
+            "id": "6576"
+        }
+    ]
+}

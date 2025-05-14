@@ -1,0 +1,123 @@
+{
+    "title": "4.1: Vaults: Overview",
+    "id": "ujDaDhUkl5ksXUzt8FrOVK3gD/IJlIDQwTYP5K8aRUk=",
+    "originalId": 380,
+    "position": 15,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "The Vaults subsystem is the on-chain piggy-bank that holds fee revenue for Alchemix-V3.  There are only three concrete source files you need to know, plus two small interfaces and one shared abstract base.  Everything lives under `src/` and `src/adapters/`.",
+            "title": "",
+            "id": "6698"
+        },
+        {
+            "type": "textOnly",
+            "description": "Files that make up Vaults  \n- `src/adapters/AbstractFeeVault.sol`  \n- `src/AlchemistTokenVault.sol`  \n- `src/AlchemistETHVault.sol`  \n- `src/interfaces/IAlchemistTokenVault.sol`  \n- `src/interfaces/IAlchemistETHVault.sol`",
+            "title": "",
+            "id": "6699"
+        },
+        {
+            "type": "highlight",
+            "description": "The abstract base.  Lines 8-13 declare `AbstractFeeVault`, inheriting from `IFeeVault` and `Ownable`, and store the immutable `token` address.",
+            "file": "src/adapters/AbstractFeeVault.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 15
+                }
+            ],
+            "title": "",
+            "id": "6700"
+        },
+        {
+            "type": "textOnly",
+            "description": "**AbstractFeeVault** centralises common logic:  \n- keeps an `authorized` mapping (ln 22)  \n- emits `Deposited`, `Withdrawn`, `AuthorizationUpdated` events (ln 24-28)  \n- supplies the `onlyAuthorized` modifier (ln 32-35)  \n- `constructor` auto-authorises the `Alchemist` core contract & owner (ln 43-50)  \n- declares abstract hooks `withdraw()` and `totalDeposits()` to be overridden by concrete vaults.",
+            "title": "",
+            "id": "6701"
+        },
+        {
+            "type": "highlight",
+            "description": "ERC20 vault interface – note the function list: `deposit`, `withdraw`, `setAuthorizedWithdrawer`, `setAlchemist` plus simple views.",
+            "file": "src/interfaces/IAlchemistTokenVault.sol",
+            "highlight": [
+                {
+                    "start": 6,
+                    "end": 55
+                }
+            ],
+            "title": "",
+            "id": "6702"
+        },
+        {
+            "type": "highlight",
+            "description": "ETH vault interface – key functions are `depositWETH`, `withdraw`, `setAlchemist`, `balanceOf`, `weth`, `alchemist`, `totalDeposits`.",
+            "file": "src/interfaces/IAlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 4,
+                    "end": 58
+                }
+            ],
+            "title": "",
+            "id": "6703"
+        },
+        {
+            "type": "highlight",
+            "description": "Concrete ERC20 implementation – `contract AlchemistTokenVault is AbstractFeeVault`.",
+            "file": "src/AlchemistTokenVault.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 15
+                }
+            ],
+            "title": "",
+            "id": "6704"
+        },
+        {
+            "type": "highlight",
+            "description": "Core methods (lines 22-51):  \n- `deposit` anyone can call; transfers tokens in and fires `Deposited`.  \n- `withdraw` onlyAuthorized; transfers tokens out and fires `Withdrawn`.  \n- `totalDeposits` overrides the abstract hook with the contract’s token balance.",
+            "file": "src/AlchemistTokenVault.sol",
+            "highlight": [
+                {
+                    "start": 22,
+                    "end": 51
+                }
+            ],
+            "title": "",
+            "id": "6705"
+        },
+        {
+            "type": "highlight",
+            "description": "Concrete ETH/WETH implementation – `contract AlchemistETHVault is AbstractFeeVault, ReentrancyGuard`.",
+            "file": "src/AlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 10,
+                    "end": 17
+                }
+            ],
+            "title": "",
+            "id": "6706"
+        },
+        {
+            "type": "highlight",
+            "description": "Key methods:  \n- `totalDeposits` (30-35) returns native balance.  \n- `deposit` pays ETH directly (38-44).  \n- `depositWETH` unwraps WETH then records the deposit (54-65).  \n- `withdraw` (81-91) onlyAuthorized; sends ETH via `.call{value:amount}` and checks for success.",
+            "file": "src/AlchemistETHVault.sol",
+            "highlight": [
+                {
+                    "start": 30,
+                    "end": 91
+                }
+            ],
+            "title": "",
+            "id": "6707"
+        },
+        {
+            "type": "textOnly",
+            "description": "Putting it together: one abstract contract establishes ownership & authorisation; two thin concrete contracts implement the `ERC20` and `ETH/WETH` flavours and conform to their respective interfaces. They expose identical high-level calls (`deposit`, `withdraw`, `totalDeposits`) so the rest of **Alchemix-V3** can treat fee storage uniformly.",
+            "title": "",
+            "id": "6708"
+        }
+    ]
+}

@@ -1,0 +1,111 @@
+{
+    "title": "2.6: Yearn Vault Interface",
+    "id": "nRmpEVxNXx7+e1cz2ToMxX7IOueY3dd3vJjvttv0A28=",
+    "originalId": 372,
+    "position": 7,
+    "steps": [
+        {
+            "type": "textOnly",
+            "description": "We will look at the `Yearn V2 vault interface` that `Alchemix` calls when it deposits yield-bearing collateral, follows gains, and respects `Yearn’s governance`. By the end you will know the meaning of every public field and method used in the integration.",
+            "title": "",
+            "id": "6609"
+        },
+        {
+            "type": "highlight",
+            "description": "The vault tracks every attached strategy with the `StrategyParams` **struct**:\n- line 10  `performanceFee` – % of profits the strategy keeps.\n- line 11  `activation` – first time the strategy was added.\n- line 12  `debtRatio` – share of vault assets it may borrow.\n- lines 13-14  `minDebtPerHarvest`/`maxDebtPerHarvest` – size bounds each harvest may raise debt by.\n- line 15  `lastReport` – last block the strategy called `report()`.\n- line 16  `totalDebt` – principal borrowed from the vault.\n- lines 17-18  `totalGain` / `totalLoss` – cumulative pnl.\n- line 19  `enforceChangeLimit` – whether the next two ratios are enforced.\n- lines 20-21  `profitLimitRatio` / `lossLimitRatio` – relative harvest change caps.\n- line 22  `customCheck` – optional contract hook used by governance.",
+            "file": "src/interfaces/IYearnVaultV2.sol",
+            "highlight": [
+                {
+                    "start": 8,
+                    "end": 23
+                }
+            ],
+            "title": "",
+            "id": "6610"
+        },
+        {
+            "type": "highlight",
+            "description": "Depositing yields `Yearn` shares. `Vyper` creates three overloads so that callers may omit optional arguments:\n- `deposit()` – move full `ERC-20` balance to the vault and send shares back to `msg.sender`.\n- `deposit(amount)` – specify token amount, still receive shares yourself.\n- `deposit(amount, recipient)` – specify both amount and the address that receives the `yvTokens`.\n`Alchemix` typically uses the second form when it pushes a precise collateral quantity.",
+            "file": "src/interfaces/IYearnVaultV2.sol",
+            "highlight": [
+                {
+                    "start": 29,
+                    "end": 35
+                }
+            ],
+            "title": "",
+            "id": "6611"
+        },
+        {
+            "type": "highlight",
+            "description": "Withdraw is symmetrical, again with defaulted arguments:\n- `withdraw()` – burn all caller shares and redeem underlying to caller.\n- `withdraw(maxShares)` – burn at most that many shares.\n- `withdraw(maxShares, recipient)` – send the underlying elsewhere.\n- `withdraw(maxShares, recipient, maxLoss)` – tolerate slippage up to maxLoss (basis-points).\n`Alchemix` uses these when users unwrap yvTokens back to the base asset.",
+            "file": "src/interfaces/IYearnVaultV2.sol",
+            "highlight": [
+                {
+                    "start": 36,
+                    "end": 44
+                }
+            ],
+            "title": "",
+            "id": "6612"
+        },
+        {
+            "type": "highlight",
+            "description": "Size & limit helpers frequently polled by front-ends:\n- `token()` → **ERC-20** deposited.\n- `strategies(addr)` → fetch the `StrategyParams` shown earlier.\n- `pricePerShare()` – current value of one `yvToken` in base units; **Alchemix** multiplies this by share balance to value collateral.\n- `totalAssets()` – aggregate base tokens managed by vault.\n- `depositLimit()` – hard cap that governance can impose.\n- `maxAvailableShares()` – shares that could be withdrawn right now without touching strategies.",
+            "file": "src/interfaces/IYearnVaultV2.sol",
+            "highlight": [
+                {
+                    "start": 45,
+                    "end": 56
+                }
+            ],
+            "title": "",
+            "id": "6613"
+        },
+        {
+            "type": "highlight",
+            "description": "On-chain accounting used by strategies:\n- `creditAvailable()` – how much more this strategy may borrow this block.\n- `debtOutstanding()` – amount the vault wants repaid now.\n- `expectedReturn()` – profit the strategy should be able to realise.\nAlthough Alchemix is not itself a strategy contract, these three views drive Yearn’s internal rebalancing and thus indirectly affect the pricePerShare that Alchemix observes.",
+            "file": "src/interfaces/IYearnVaultV2.sol",
+            "highlight": [
+                {
+                    "start": 57,
+                    "end": 67
+                }
+            ],
+            "title": "",
+            "id": "6614"
+        },
+        {
+            "type": "highlight",
+            "description": "`report(gain, loss, debtPayment)` is the single state-mutating hook every strategy must call after harvesting. It updates the `StrategyParams` shown on slide 2 and redistributes fees. Down-stream effects ultimately surface in `pricePerShare()`.",
+            "file": "src/interfaces/IYearnVaultV2.sol",
+            "highlight": [
+                {
+                    "start": 69,
+                    "end": 72
+                }
+            ],
+            "title": "",
+            "id": "6615"
+        },
+        {
+            "type": "highlight",
+            "description": "Governance endpoints a protocol integrator may want to read:\n- `apiVersion()` – semantic version of the vault code, helpful for migrations.\n- `governance()` – address allowed to enact owner-level changes.\n- `management()` – ops address with reduced permissions.\n- `guardian()` – emergency address that can trigger shutdowns.\n`Alchemix` monitors these so that it can react if a vault it is using changes control.",
+            "file": "src/interfaces/IYearnVaultV2.sol",
+            "highlight": [
+                {
+                    "start": 25,
+                    "end": 91
+                }
+            ],
+            "title": "",
+            "id": "6616"
+        },
+        {
+            "type": "textOnly",
+            "description": "You have now walked the entire `Yearn V2 public API`: data that measures strategy performance, overloaded `deposit/withdraw` entry points, real-time accounting helpers, the mandatory `report` call, and governance accessors. These pieces form the lifecycle from depositing `Alchemix collateral`, through yield generation, to eventual withdrawal while staying aware of `vault limits` and control addresses.",
+            "title": "",
+            "id": "6617"
+        }
+    ]
+}

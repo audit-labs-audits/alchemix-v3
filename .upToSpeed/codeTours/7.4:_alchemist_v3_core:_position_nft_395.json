@@ -1,0 +1,124 @@
+{
+  "title": "7.4: Alchemist V3 Core: Position NFT",
+  "id": "b/v4CGSFrNs5cCzSZuXygH93+UasFSHvI4KjohBFRRg=",
+  "originalId": 395,
+  "position": 30,
+  "steps": [
+    {
+      "type": "textOnly",
+      "description": "Every Alchemist V3 user account is materialised as an `ERC-721 NFT`. Holding the `NFT` means owning the position – all collateral, debt and allowances are linked to the `token Id`.",
+      "title": "",
+      "id": "6877"
+    },
+    {
+      "type": "highlight",
+      "description": "The position NFT derives from OpenZeppelin’s enumerable implementation, so it enjoys the standard ERC-721 interface plus totalSupply / tokenByIndex helpers.",
+      "file": "src/AlchemistV3Position.sol",
+      "highlight": [
+        {
+          "start": 4,
+          "end": 18
+        }
+      ],
+      "title": "",
+      "id": "6878"
+    },
+    {
+      "type": "highlight",
+      "description": "Two pieces of state are kept locally: the authoritative Alchemist contract and a running token-id counter.  The onlyAlchemist modifier ensures that **only** the core protocol can mint, burn, or otherwise manage tokens.",
+      "file": "src/AlchemistV3Position.sol",
+      "highlight": [
+        {
+          "start": 19,
+          "end": 46
+        }
+      ],
+      "title": "",
+      "id": "6879"
+    },
+    {
+      "type": "highlight",
+      "description": "During construction the NFT is given its name/symbol and is permanently paired with the Alchemist V3 contract.  Supplying the zero address is rejected.",
+      "file": "src/AlchemistV3Position.sol",
+      "highlight": [
+        {
+          "start": 48,
+          "end": 57
+        }
+      ],
+      "title": "",
+      "id": "6880"
+    },
+    {
+      "type": "highlight",
+      "description": "Minting is only callable by Alchemist V3.  The counter is incremented, then the token is minted to the requested address.  The newly minted tokenId is returned to the caller so the core contract can remember which account it just created.",
+      "file": "src/AlchemistV3Position.sol",
+      "highlight": [
+        {
+          "start": 60,
+          "end": 73
+        }
+      ],
+      "title": "",
+      "id": "6881"
+    },
+    {
+      "type": "highlight",
+      "description": "Burning is equally restricted – the core protocol may destroy a token when the position is closed.  OpenZeppelin’s internal _burn takes care of bookkeeping and emits the standard Transfer(to=0) event.",
+      "file": "src/AlchemistV3Position.sol",
+      "highlight": [
+        {
+          "start": 75,
+          "end": 77
+        }
+      ],
+      "title": "",
+      "id": "6882"
+    },
+    {
+      "type": "highlight",
+      "description": "Whenever ownership changes, the hook calls `resetMintAllowances` on Alchemist V3 before the transfer finalises.  This guarantees that any delegated mint rights stay with the old owner and cannot accompany the token to its new holder.",
+      "file": "src/AlchemistV3Position.sol",
+      "highlight": [
+        {
+          "start": 100,
+          "end": 107
+        }
+      ],
+      "title": "",
+      "id": "6883"
+    },
+    {
+      "type": "highlight",
+      "description": "Each NFT renders its own metadata fully on-chain.  After proving the token exists, it forwards to NFTMetadataGenerator which returns a base64 encoded JSON blob containing an SVG image.",
+      "file": "src/AlchemistV3Position.sol",
+      "highlight": [
+        {
+          "start": 84,
+          "end": 88
+        }
+      ],
+      "title": "",
+      "id": "6884"
+    },
+    {
+      "type": "highlight",
+      "description": "The helper composes a minimal SVG (background, circle, title, position number) and embeds it in the JSON.  The whole payload is then base64-wrapped behind the data: URI scheme, meaning no external servers are required.",
+      "file": "src/libraries/NFTMetadataGenerator.sol",
+      "highlight": [
+        {
+          "start": 19,
+          "end": 78
+        }
+      ],
+      "title": "",
+      "id": "6885"
+    },
+    {
+      "type": "textOnly",
+      "description": "`OpenZeppelin`’s `ERC-721` implementation automatically emits `Transfer` on mint/burn/transfer plus optional URI events when `tokenURI` changes. With these pieces in place, positions can be freely transferred, displayed by any `NFT marketplace`, and safely drive the core logic of **Alchemist V3**.",
+      "title": "",
+      "id": "6886"
+    }
+  ]
+}
